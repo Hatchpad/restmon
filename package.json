@@ -1,0 +1,16 @@
+{
+  "name": "restmon",
+  "version": "1.0.0",
+  "description": "NodeJS package that allows mongoose models to handle rest-like parameters and cursors.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Mongoose",
+    "REST",
+    "Cursor"
+  ],
+  "author": "Jason Mullins <jason.mullins@hatchpad.io> (http://www.hatchpad.io)",
+  "license": "ISC"
+}
