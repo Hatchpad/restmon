@@ -6,13 +6,16 @@ var Restmon = require('../')(mongoose);
 describe('ignoreCase / toLowerCase', function () {
   describe('when ignoreCase is true (by default)', function () {
     var schema = {
+      created:{type:Date, default:Date.now, index:true},
       username:{type:String, sortable:true}
     };
     var UserRestmon = new Restmon('User', schema);
-    var user = new UserRestmon.model({username:'Jason'});
+    var savedUser;
 
     beforeEach(function(done) {
-      UserRestmon.save(user, function(err, data) {
+      var transientUser = new UserRestmon.model({username:'Jason'});
+      UserRestmon.save(transientUser, function(err, data) {
+        savedUser = data;
         done();
       });
     });
@@ -30,8 +33,33 @@ describe('ignoreCase / toLowerCase', function () {
       expect(_usernameColumn.options.index).toBe(true);
     });
 
+    it('saves the useraname correctly', function() {
+      expect(savedUser.username).toBe('Jason');
+      expect(savedUser._username).toBe('jason');
+    });
+
+    it('sets the updated field', function() {
+      expect(savedUser.updated).not.toBe(null);
+      expect(savedUser.updated).not.toBe(undefined);
+    });
+
     it('does something', function() {
       expect(true).toBe(true);
+    });
+
+    describe('find by username', function() {
+      var foundObj;
+
+      beforeEach(function(done) {
+        UserRestmon.findOne({_username:'Jason'}, function(err, usr) {
+          foundObj = usr;
+          done();
+        });
+      });
+
+      it('finds the user', function() {
+        expect(foundObj.username).toBe('Jason');
+      });
     });
   });
 });

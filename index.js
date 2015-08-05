@@ -26,7 +26,12 @@ module.exports = function(mongoose) {
     for (key in schema) {
       property = schema[key];
       if (typeof property == 'object') {
-        if (this.config_.ignoreCase && property.type == String && property.sortable) {
+        if (property.sortable) {
+          if (property.ignoreCase !== true && property.ignoreCase !== false) {
+            property.ignoreCase = this.config_.ignoreCase;
+          }
+        }
+        if (property.ignoreCase && property.type == String && property.sortable) {
           schema['_' + key] = property;
           schema['_' + key].index = true;
           this.sortables_.push({key:key, field:'_' + key})
@@ -48,6 +53,30 @@ module.exports = function(mongoose) {
     }
     entity[this.config_.updated] = Date.now();
     entity.save(cb);
+  };
+
+  Restmon.prototype.find = function(criteria, cb) {
+    this.model.find(this.getCriteria(criteria), cb);
+  };
+
+  Restmon.prototype.findOne = function(criteria, cb) {
+    this.model.findOne(this.getCriteria(criteria), cb);
+  };
+
+  Restmon.prototype.getCriteria = function(rawCriteria) {
+    if (!rawCriteria || typeof rawCriteria !== 'object') {
+      return rawCriteria;
+    }
+    var key, criteria;
+    criteria = {};
+    for(key in rawCriteria) {
+      if (typeof(key) === 'string' && this.schema_[key] && this.schema_[key].stortable && this.schema_[key].ignoreCase) {
+        criteria['_' + key] = rawCriteria[key].toLowerCase();
+      } else {
+        criteria[key] = rawCriteria[key];
+      }
+    }
+    var newCriteria;
   };
 
   return Restmon;
