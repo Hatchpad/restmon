@@ -187,7 +187,7 @@ describe('ignoreCase / toLowerCase', function () {
       });
     });
 
-    it('creates the cursor correctly', function() {
+    it('builds the cursor correctly', function() {
       expect(cursor).not.toBe(undefined);
       expect(cursor).not.toBe(null);
       expect(cursor.username).toBe('boog');
@@ -209,6 +209,7 @@ describe('ignoreCase / toLowerCase', function () {
     };
     var UserRestmon;
     var users = [];
+    var cursors = [];
 
     beforeEach(function(done) {
       UserRestmon = new Restmon('User', schema);
@@ -228,8 +229,10 @@ describe('ignoreCase / toLowerCase', function () {
       });
       UserRestmon.save(transientUser1, function(err, data) {
         users.push(data);
+        cursors.push(UserRestmon.getCursor(data));
         UserRestmon.save(transientUser2, function(err, data) {
           users.push(data);
+          cursors.push(UserRestmon.getCursor(data));
           done();
         });
       });
@@ -262,6 +265,98 @@ describe('ignoreCase / toLowerCase', function () {
       it('sorts the users by username', function() {
         expect(foundUsers[0].username).toBe('aoog');
         expect(foundUsers[1].username).toBe('boog');
+      });
+    });
+
+    describe('after with results', function() {
+      var response, aboutNow;
+
+      beforeEach(function(done) {
+        aboutNow = Date.now() - 10000;
+        UserRestmon.findOne({username:'boog'}, function(err, usr) {
+          UserRestmon.save(usr, function(err, res) {
+            UserRestmon
+            .findOne({username:'boog'})
+            .since(aboutNow)
+            .exec(function(err, res) {
+              response = res;
+              done();
+            });
+          });
+        });
+      });
+
+      it('gets the user after the date', function() {
+        expect(response.data.username).toBe('boog');
+      });
+    });
+
+    describe('after without results', function() {
+      var response, aboutNow;
+
+      beforeEach(function(done) {
+        aboutNow = Date.now() + 1000;
+        UserRestmon.findOne({username:'boog'}, function(err, usr) {
+          UserRestmon.save(usr, function(err, res) {
+            UserRestmon
+            .findOne({username:'boog'})
+            .since(aboutNow)
+            .exec(function(err, res) {
+              response = res;
+              done();
+            });
+          });
+        });
+      });
+
+      it('does not get the user since the date', function() {
+        expect(response.data).toBe(undefined);
+      });
+    });
+
+    describe('until with results', function() {
+      var response, aboutNow;
+
+      beforeEach(function(done) {
+        aboutNow = Date.now() + 1000;
+        UserRestmon.findOne({username:'boog'}, function(err, usr) {
+          UserRestmon.save(usr, function(err, res) {
+            UserRestmon
+            .findOne({username:'boog'})
+            .until(aboutNow)
+            .exec(function(err, res) {
+              response = res;
+              done();
+            });
+          });
+        });
+      });
+
+      it('gets the user until the date', function() {
+        expect(response.data.username).toBe('boog');
+      });
+    });
+
+    describe('until without results', function() {
+      var response, aboutNow;
+
+      beforeEach(function(done) {
+        aboutNow = Date.now() - 10000;
+        UserRestmon.findOne({username:'boog'}, function(err, usr) {
+          UserRestmon.save(usr, function(err, res) {
+            UserRestmon
+            .findOne({username:'boog'})
+            .until(aboutNow)
+            .exec(function(err, res) {
+              response = res;
+              done();
+            });
+          });
+        });
+      });
+
+      it('does not get the user until the date', function() {
+        expect(response.data).toBe(undefined);
       });
     });
   });

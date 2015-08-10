@@ -26,7 +26,24 @@ module.exports = function() {
     return this;
   };
 
+  var buildCursorQuery = function(cursor, queryDirection) {
+    var query, i, sortableField, direction, sortProperty, finalDirection;
+    direction = queryDirection === 'before' ? -1 : 1;
+    query = {};
+    for(i = 0; i < this.restmon_.sortables_.length; i++) {
+      sortableField = this.restmon_.sortables_[i];
+      finalDirection = this.mongooseQuery.options.sort[sortableField] * direction;
+      query[sortableField] = (finalDirection > 0)
+        ? {$gt: cursor[sortableField]}
+        : {$lt: cursor[sortableField]};
+    }
+    return query;
+  };
+
   RestmonQuery.prototype.after = function(cursor) {
+    this.mongooseQuery._conditions.$and.push(
+      buildCursorQuery.bind(this)(cursor, 'after');
+    );
     return this;
   };
 
@@ -35,10 +52,16 @@ module.exports = function() {
   };
 
   RestmonQuery.prototype.since = function(timestamp) {
+    var sinceClause = {};
+    sinceClause[this.restmon_.config_.updated] = {$gt: timestamp};
+    this.mongooseQuery._conditions.$and.push(sinceClause);
     return this;
   };
 
   RestmonQuery.prototype.until = function(timestamp) {
+    var sinceClause = {};
+    sinceClause[this.restmon_.config_.updated] = {$lt: timestamp};
+    this.mongooseQuery._conditions.$and.push(sinceClause);
     return this;
   };
 
