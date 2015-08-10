@@ -208,22 +208,30 @@ describe('ignoreCase / toLowerCase', function () {
       about:{type:String}
     };
     var UserRestmon;
-    var savedUser;
-    var cursor;
+    var users = [];
 
     beforeEach(function(done) {
       UserRestmon = new Restmon('User', schema);
-      var transientUser = new UserRestmon.model({
+      var transientUser1 = new UserRestmon.model({
         username:'boog',
         firstName:'John',
         lastName:'Doe',
         ssn:'000-00-0000',
         about:'This is a sentence about John.'
       });
-      UserRestmon.save(transientUser, function(err, data) {
-        savedUser = data;
-        cursor = UserRestmon.getCursor(savedUser);
-        done();
+      var transientUser2 = new UserRestmon.model({
+        username:'aoog',
+        firstName:'Zohn',
+        lastName:'Goe',
+        ssn:'000-00-0000',
+        about:'This is a sentence about John.'
+      });
+      UserRestmon.save(transientUser1, function(err, data) {
+        users.push(data);
+        UserRestmon.save(transientUser2, function(err, data) {
+          users.push(data);
+          done();
+        });
       });
     });
 
@@ -239,16 +247,21 @@ describe('ignoreCase / toLowerCase', function () {
       var foundUsers = [];
 
       beforeEach(function(done) {
-        UserRestmon.find({username:'boog'})
+        UserRestmon.find({ssn:'000-00-0000'})
         .sort({username:1})
-        .mongooseQuery.exec(function(err, users) {
-          foundUsers = users;
+        .exec(function(err, res) {
+          foundUsers = res.data;
           done();
         });
       });
 
       it('finds the users', function() {
-        expect(foundUsers.length).toBe(1);
+        expect(foundUsers.length).toBe(2);
+      });
+
+      it('sorts the users by username', function() {
+        expect(foundUsers[0].username).toBe('aoog');
+        expect(foundUsers[1].username).toBe('boog');
       });
     });
   });

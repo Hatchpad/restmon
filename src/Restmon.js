@@ -58,12 +58,16 @@ module.exports = function(mongoose) {
   };
 
   Restmon.prototype.find = function(criteria, cb) {
-    var q = this.model.find(this.getCriteria(criteria), cb);
+    var crit = {$and: []};
+    crit.$and.push(this.getCriteria(criteria));
+    var q = this.model.find(crit, cb);
     return new RestmonQuery(this, q);
   };
 
   Restmon.prototype.findOne = function(criteria, cb) {
-    var q = this.model.findOne(this.getCriteria(criteria), cb);
+    var crit = {$and: []};
+    crit.$and.push(this.getCriteria(criteria));
+    var q = this.model.findOne(crit, cb);
     return new RestmonQuery(this, q);
   };
 

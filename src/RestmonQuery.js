@@ -16,7 +16,13 @@ module.exports = function() {
     return this;
   };
 
+  RestmonQuery.prototype.limit = function(lim) {
+    this.mongooseQuery = this.mongooseQuery.limit(lim);
+    return this;
+  };
+
   RestmonQuery.prototype.populate = function(populate) {
+    this.mongooseQuery = this.mongooseQuery.populate(populate);
     return this;
   };
 
@@ -37,7 +43,15 @@ module.exports = function() {
   };
 
   RestmonQuery.prototype.exec = function(cb) {
-    return this.mongooseQuery.exec(cb);
+    var response = {_meta: {}};
+    return this.mongooseQuery.exec(function(err, data) {
+      if (data) {
+        response.data = data;
+      }
+      if (cb) {
+        cb(err, response);
+      }
+    });
   };
 
   return RestmonQuery;
