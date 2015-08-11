@@ -12,5 +12,8 @@
     "Cursor"
   ],
   "author": "Jason Mullins <jason.mullins@hatchpad.io> (http://www.hatchpad.io)",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "jwt-simple": "^0.3.0"
+  }
 }

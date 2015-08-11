@@ -1,5 +1,6 @@
-module.exports = function(mongoose) {
+module.exports = function(mongoose, secret) {
   var RestmonQuery = require('./RestmonQuery')();
+  var RestmonCursor = require('./RestmonCursor')(secret);
 
   if (!mongoose) {
     throw new Error('mongoose is required');
@@ -59,14 +60,18 @@ module.exports = function(mongoose) {
 
   Restmon.prototype.find = function(criteria, cb) {
     var crit = {$and: []};
-    crit.$and.push(this.getCriteria(criteria));
+    if (criteria && criteria != {}) {
+      crit.$and.push(this.getCriteria(criteria));
+    }
     var q = this.model.find(crit, cb);
     return new RestmonQuery(this, q);
   };
 
   Restmon.prototype.findOne = function(criteria, cb) {
     var crit = {$and: []};
-    crit.$and.push(this.getCriteria(criteria));
+    if (criteria && criteria != {}) {
+      crit.$and.push(this.getCriteria(criteria));
+    }
     var q = this.model.findOne(crit, cb);
     return new RestmonQuery(this, q);
   };
@@ -80,7 +85,7 @@ module.exports = function(mongoose) {
         cursor[key] = entity[key];
       }
     }
-    return cursor;
+    return new RestmonCursor(cursor);
   };
 
   Restmon.prototype.getCriteria = function(rawCriteria) {
@@ -98,6 +103,8 @@ module.exports = function(mongoose) {
     }
     return criteria;
   };
+
+  Restmon.Cursor = RestmonCursor;
 
   return Restmon;
 };

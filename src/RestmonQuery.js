@@ -34,15 +34,15 @@ module.exports = function() {
       sortableField = this.restmon_.sortables_[i];
       finalDirection = this.mongooseQuery.options.sort[sortableField] * direction;
       query[sortableField] = (finalDirection > 0)
-        ? {$gt: cursor[sortableField]}
-        : {$lt: cursor[sortableField]};
+        ? {$gt: cursor.get(sortableField)}
+        : {$lt: cursor.get(sortableField)};
     }
     return query;
   };
 
   RestmonQuery.prototype.after = function(cursor) {
     this.mongooseQuery._conditions.$and.push(
-      buildCursorQuery.bind(this)(cursor, 'after');
+      buildCursorQuery.bind(this)(cursor, 'after')
     );
     return this;
   };
@@ -67,14 +67,27 @@ module.exports = function() {
 
   RestmonQuery.prototype.exec = function(cb) {
     var response = {_meta: {}};
+    var i;
     return this.mongooseQuery.exec(function(err, data) {
-      if (data) {
+      if (data && Array.isArray(data)) {
+        response.data = data;
+        response._meta.first = this.restmon_.getCursor(data[0]).encode();
+        response._meta.last = this.restmon_.getCursor(data[data.length - 1]).encode();
+        for (i = 0; i < data.length; i++) {
+          if (!response._meta.freshest || data[i][this.restmon_.config_.updated] > response._meta.freshest) {
+            response._meta.freshest = data[i][this.restmon_.config_.updated];
+          }
+          if (!response._meta.stalest || data[i][this.restmon_.config_.updated] < response._meta.stalest) {
+            response._meta.stalest = data[i][this.restmon_.config_.updated];
+          }
+        }
+      } else {
         response.data = data;
       }
       if (cb) {
         cb(err, response);
       }
-    });
+    }.bind(this));
   };
 
   return RestmonQuery;

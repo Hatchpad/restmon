@@ -190,11 +190,11 @@ describe('ignoreCase / toLowerCase', function () {
     it('builds the cursor correctly', function() {
       expect(cursor).not.toBe(undefined);
       expect(cursor).not.toBe(null);
-      expect(cursor.username).toBe('boog');
-      expect(cursor.firstName).toBe('John');
-      expect(cursor.lastName).toBe('Doe');
-      expect(cursor.ssn).toBe(undefined);
-      expect(cursor.about).toBe(undefined);
+      expect(cursor.get('username')).toBe('boog');
+      expect(cursor.get('firstName')).toBe('John');
+      expect(cursor.get('lastName')).toBe('Doe');
+      expect(cursor.get('ssn')).toBe(undefined);
+      expect(cursor.get('about')).toBe(undefined);
     });
   });
 
@@ -310,7 +310,7 @@ describe('ignoreCase / toLowerCase', function () {
       });
 
       it('does not get the user since the date', function() {
-        expect(response.data).toBe(undefined);
+        expect(response.data).toBe(null);
       });
     });
 
@@ -356,8 +356,82 @@ describe('ignoreCase / toLowerCase', function () {
       });
 
       it('does not get the user until the date', function() {
-        expect(response.data).toBe(undefined);
+        expect(response.data).toBe(null);
       });
+    });
+  });
+
+  describe('_meta', function() {
+    var schema = {
+      username:{type:String, sortable:true}
+    };
+    var UserRestmon;
+    var findResponse;
+
+    beforeEach(function(done) {
+      UserRestmon = new Restmon('User', schema);
+      var transientUser0 = new UserRestmon.model({username:'b'});
+      var transientUser1 = new UserRestmon.model({username:'a'});
+      var transientUser2 = new UserRestmon.model({username:'d'});
+      var transientUser3 = new UserRestmon.model({username:'c'});
+      UserRestmon.save(transientUser0, function(err, data) {
+        UserRestmon.save(transientUser1, function(err, data) {
+          UserRestmon.save(transientUser2, function(err, data) {
+            setTimeout(function() {
+              UserRestmon.save(transientUser3, function(err, data) {
+                UserRestmon.find({})
+                .sort({username:1})
+                .exec(function(err, res) {
+                  findResponse = res;
+                  done();
+                });
+              });
+            }, 5);
+          });
+        });
+      });
+    });
+
+    afterEach(function(done) {
+      UserRestmon.model.remove({}, function() {
+        delete mongoose.modelSchemas['User'];
+        delete mongoose.models['User'];
+        done();
+      });
+    });
+
+    it('provides the freshest updated data in response metadata', function() {
+      expect(findResponse._meta.freshest).not.toBe(null);
+      expect(findResponse._meta.freshest).not.toBe(undefined);
+    });
+
+    it('provides the stalest updated data in response metadata', function() {
+      expect(findResponse._meta.stalest).not.toBe(null);
+      expect(findResponse._meta.stalest).not.toBe(undefined);
+    });
+
+    it('affirms that the stalest is older than the freshest', function() {
+      expect(findResponse._meta.stalest).toBeLessThan(findResponse._meta.freshest);
+    });
+
+    it('provides a first cursor', function() {
+      expect(findResponse._meta.first).not.toBe(null);
+      expect(findResponse._meta.first).not.toBe(undefined);
+    });
+
+    it('provides the currect first cursor', function() {
+      var cursor = new Restmon.Cursor(findResponse._meta.first);
+      expect(cursor.get('username')).toBe('a');
+    });
+
+    it('provides a last cursor', function() {
+      expect(findResponse._meta.last).not.toBe(null);
+      expect(findResponse._meta.last).not.toBe(undefined);
+    });
+
+    it('provides the currect last cursor', function() {
+      var cursor = new Restmon.Cursor(findResponse._meta.last);
+      expect(cursor.get('username')).toBe('d');
     });
   });
 });
