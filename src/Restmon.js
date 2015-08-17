@@ -9,6 +9,7 @@ module.exports = function(mongoose, secret) {
   var Restmon = function(name, schema, config) {
     config = config || {};
     config.ignoreCase = (config.ignoreCase === false) ? false : true;
+    config.id = config.id || '_id';
     config.updated = config.updated || 'updated';
     this.config_ = config;
 
@@ -25,26 +26,28 @@ module.exports = function(mongoose, secret) {
   };
 
   Restmon.prototype.generateMongooseSchema = function(schema) {
-    var key, property;
+    var key, property, builtSchema;
 
     this.sortables_ = [];
+    builtSchema = {};
 
     if (!schema[this.config_.updated]) {
-      schema[this.config_.updated] = {type:Date, default:Date.now, sortable:true};
+      builtSchema[this.config_.updated] = {type:Date, default:Date.now, sortable:true};
     }
     for (key in schema) {
       property = schema[key];
+      builtSchema[key] = property;
       if (typeof property == 'object' && property.sortable) {
         if (this.isIgnoreCase(key) && property.type == String) {
-          schema['_' + key] = property;
-          schema['_' + key].index = true;
+          builtSchema['_' + key] = schema[key]
+          builtSchema['_' + key].index = true;
         } else {
-          schema[key].index = true;
+          builtSchema[key].index = true;
         }
         this.sortables_.push(key);
       }
     }
-    this.mongooseSchema_ = new mongoose.Schema(schema);
+    this.mongooseSchema_ = new mongoose.Schema(builtSchema);
   };
 
   Restmon.prototype.save = function(entity, cb) {
@@ -56,6 +59,22 @@ module.exports = function(mongoose, secret) {
     }
     entity[this.config_.updated] = Date.now();
     entity.save(cb);
+  };
+
+  Restmon.prototype.create = function(entities, cb) {
+    if (!Array.isArray(entities)) {
+      this.save(entities, cb);
+      return;
+    }
+    entities.forEach(function(entity) {
+      for (key in entity) {
+        if (this.schema_[key] && this.schema_[key].sortable && this.schema_[key].type == String && this.isIgnoreCase(key) && entity.isModified(key)) {
+          entity['_' + key] = entity[key].toLowerCase();
+        }
+      }
+      entity[this.config_.updated] = Date.now();
+    }.bind(this));
+    this.model.create(entities, cb);
   };
 
   Restmon.prototype.find = function(criteria, cb) {
@@ -85,6 +104,7 @@ module.exports = function(mongoose, secret) {
         cursor[key] = entity[key];
       }
     }
+    cursor[this.config_.id] = entity[this.config_.id];
     return new RestmonCursor(cursor);
   };
 

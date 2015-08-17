@@ -150,6 +150,50 @@ describe('ignoreCase / toLowerCase', function () {
     });
   });
 
+  describe('bulk create', function() {
+    var schema = {
+      created:{type:Date, default:Date.now, sortable:true},
+      username:{type:String, sortable:true, ignoreCase:false},
+      firstName:{type:String, sortable:true}
+    };
+
+    var u1, u2, foundUsers;
+
+    beforeEach(function(done) {
+      UserRestmon = new Restmon('User', schema);
+      u1 = new UserRestmon.model({username: 'a', firstName: 'John'});
+      u2 = new UserRestmon.model({username: 'b', firstName: 'Jane'});
+      UserRestmon.create([u1,u2], function(users) {
+        UserRestmon.find({})
+        .sort({firstName:1})
+        .exec(function(err, res) {
+          foundUsers = res.data;
+          done();
+        });
+      });
+    });
+
+    afterEach(function(done) {
+      UserRestmon.model.remove({}, function() {
+        delete mongoose.modelSchemas['User'];
+        delete mongoose.models['User'];
+        done();
+      });
+    });
+
+    it('creates the records correctly', function() {
+      expect(foundUsers.length).toBe(2);
+      expect(foundUsers[0].firstName).toBe('Jane');
+      expect(foundUsers[0]._firstName).toBe('jane');
+      expect(foundUsers[0].username).toBe('b');
+      expect(foundUsers[0]._username).toBe(undefined);
+      expect(foundUsers[1].firstName).toBe('John');
+      expect(foundUsers[1]._firstName).toBe('john');
+      expect(foundUsers[1].username).toBe('a');
+      expect(foundUsers[1]._username).toBe(undefined);
+    });
+  });
+
   describe('cursors', function () {
     var schema = {
       created:{type:Date, default:Date.now, sortable:true},
@@ -268,7 +312,7 @@ describe('ignoreCase / toLowerCase', function () {
       });
     });
 
-    describe('after with results', function() {
+    describe('since with results', function() {
       var response, aboutNow;
 
       beforeEach(function(done) {
@@ -286,12 +330,12 @@ describe('ignoreCase / toLowerCase', function () {
         });
       });
 
-      it('gets the user after the date', function() {
+      it('gets the user since the date', function() {
         expect(response.data.username).toBe('boog');
       });
     });
 
-    describe('after without results', function() {
+    describe('since without results', function() {
       var response, aboutNow;
 
       beforeEach(function(done) {
@@ -370,10 +414,15 @@ describe('ignoreCase / toLowerCase', function () {
 
     beforeEach(function(done) {
       UserRestmon = new Restmon('User', schema);
-      var transientUser0 = new UserRestmon.model({username:'b'});
-      var transientUser1 = new UserRestmon.model({username:'a'});
-      var transientUser2 = new UserRestmon.model({username:'d'});
-      var transientUser3 = new UserRestmon.model({username:'c'});
+      var transientUser0 = new UserRestmon.model({username:'c'});
+      var transientUser1 = new UserRestmon.model({username:'b'});
+      var transientUser2 = new UserRestmon.model({username:'e'});
+      var transientUser3 = new UserRestmon.model({username:'d'});
+
+      var u0 = new UserRestmon.model({username:'dd'});
+      var u1 = new UserRestmon.model({username:'f'});
+      var u2 = new UserRestmon.model({username:'a'});
+      var u3 = new UserRestmon.model({username:'bb'});
       UserRestmon.save(transientUser0, function(err, data) {
         UserRestmon.save(transientUser1, function(err, data) {
           UserRestmon.save(transientUser2, function(err, data) {
@@ -383,7 +432,9 @@ describe('ignoreCase / toLowerCase', function () {
                 .sort({username:1})
                 .exec(function(err, res) {
                   findResponse = res;
-                  done();
+                  UserRestmon.create([u0,u1,u2,u3], function() {
+                    done();
+                  });
                 });
               });
             }, 5);
@@ -421,7 +472,7 @@ describe('ignoreCase / toLowerCase', function () {
 
     it('provides the currect first cursor', function() {
       var cursor = new Restmon.Cursor(findResponse._meta.first);
-      expect(cursor.get('username')).toBe('a');
+      expect(cursor.get('username')).toBe('b');
     });
 
     it('provides a last cursor', function() {
@@ -431,7 +482,85 @@ describe('ignoreCase / toLowerCase', function () {
 
     it('provides the currect last cursor', function() {
       var cursor = new Restmon.Cursor(findResponse._meta.last);
-      expect(cursor.get('username')).toBe('d');
+      expect(cursor.get('username')).toBe('e');
+    });
+
+    describe('after sorted asc', function() {
+      var afterRes;
+
+      beforeEach(function(done) {
+        var cursor = new Restmon.Cursor(findResponse._meta.last);
+        UserRestmon.find({})
+        .sort({username:1})
+        .after(cursor)
+        .exec(function(err, res) {
+          afterRes = res;
+          done();
+        });
+      });
+
+      it('finds the correct records', function() {
+        expect(afterRes.data.length).toBe(1);
+        expect(afterRes.data[0].username).toBe('f');
+      });
+    });
+
+    describe('before sorted asc', function() {
+      var afterRes;
+
+      beforeEach(function(done) {
+        var cursor = new Restmon.Cursor(findResponse._meta.first);
+        UserRestmon.find({})
+        .sort({username:1})
+        .before(cursor)
+        .exec(function(err, res) {
+          afterRes = res;
+          done();
+        });
+      });
+
+      it('finds the correct records', function() {
+        expect(afterRes.data.length).toBe(1);
+        expect(afterRes.data[0].username).toBe('a');
+      });
+    });
+
+    describe('after sorted desc', function() {
+      var afterRes;
+
+      beforeEach(function(done) {
+        var cursor = new Restmon.Cursor(findResponse._meta.last);
+        UserRestmon.find({})
+        .sort({username:-1})
+        .after(cursor)
+        .exec(function(err, res) {
+          afterRes = res;
+          done();
+        });
+      });
+
+      it('finds the correct records', function() {
+        expect(afterRes.data.length).toBe(6);
+      });
+    });
+
+    describe('before sorted desc', function() {
+      var afterRes;
+
+      beforeEach(function(done) {
+        var cursor = new Restmon.Cursor(findResponse._meta.first);
+        UserRestmon.find({})
+        .sort({username:-1})
+        .before(cursor)
+        .exec(function(err, res) {
+          afterRes = res;
+          done();
+        });
+      });
+
+      it('finds the correct records', function() {
+        expect(afterRes.data.length).toBe(6);
+      });
     });
   });
 });
