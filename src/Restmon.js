@@ -20,6 +20,7 @@ module.exports = function(mongoose, secret) {
 
   Restmon.prototype.isIgnoreCase = function(fieldName) {
     var property = this.schema_[fieldName];
+    if (property.type != String) return false;
     if (property.ignoreCase === true) return true;
     if (property.ignoreCase === false) return false;
     return this.config_.ignoreCase;

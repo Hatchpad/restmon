@@ -55,25 +55,27 @@ module.exports = function() {
     query.$or = [];
 
     appendQueryKey = function(queryOr, idx) {
-      var sortProp, and, or, part, field, rawField;
+      var sortProp, and, or, part, field, fieldValue, rawField;
       part = {};
       field = sortByKeys[idx];
       if (this.restmon_.isIgnoreCase(field)) {
-        rawField = '_' + key;
+        rawField = '_' + field;
+        fieldValue = cursor.get(field).toLowerCase();
       } else {
-        rawField = key;
+        rawField = field;
+        fieldValue = cursor.get(field);
       }
       sortProp = sortBy[field];
       if (sortProp * naturalDirection > 0) {
-        part[rawField] = {$gt: cursor.get(field)};
+        part[rawField] = {$gt: fieldValue};
       } else {
-        part[rawField] = {$lt: cursor.get(field)};
+        part[rawField] = {$lt: fieldValue};
       }
       queryOr.push(part);
       and = {$and: []};
       queryOr.push(and);
       part = {};
-      part[rawField] = {$eq: cursor.get(field)};
+      part[rawField] = {$eq: fieldValue};
       and.$and.push(part);
       if (idx == sortByKeys.length - 1) {
         part = {};
@@ -89,7 +91,7 @@ module.exports = function() {
       else {
         or = {$or: []};
         and.$and.push(or);
-        appendQueryKey.bind(this)(or.$or, idx + 1);
+        return appendQueryKey.bind(this)(or.$or, idx + 1);
       }
     };
 

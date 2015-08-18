@@ -4,6 +4,7 @@ mongoose.connect(mongoUri);
 var Restmon = require('../')(mongoose);
 
 describe('ignoreCase / toLowerCase', function () {
+  /*
   describe('when ignoreCase is true', function () {
     var schema = {
       created:{type:Date, default:Date.now, index:true},
@@ -560,6 +561,93 @@ describe('ignoreCase / toLowerCase', function () {
 
       it('finds the correct records', function() {
         expect(afterRes.data.length).toBe(6);
+      });
+    });
+  });
+
+  */
+
+  describe('multi field sorting', function() {
+    var schema = {
+      fn:{type:String, sortable:true},
+      ln:{type:String, sortable:true},
+      ph:{type:String, sortable:true}
+    };
+    var UserRestmon, findRes;
+
+    beforeEach(function(done) {
+      UserRestmon = new Restmon('User', schema);
+      var userArr = [];
+      userArr.push(new UserRestmon.model({fn:'John', ln:'Doe', ph:'555-555-5556'}));  // 4
+      userArr.push(new UserRestmon.model({fn:'Bob', ln:'Doe', ph:'555-555-5555'}));   // 0
+      userArr.push(new UserRestmon.model({fn:'John', ln:'Foe', ph:'555-555-5555'}));  // 1
+      userArr.push(new UserRestmon.model({fn:'john', ln:'Doe', ph:'555-555-5555'}));  // 3
+      userArr.push(new UserRestmon.model({fn:'John', ln:'Doe', ph:'555-555-5554'}));  // 2
+      UserRestmon.create(userArr, function() {
+        UserRestmon.find({})
+        .sort({fn:1, ln:-1, ph:1})
+        .exec(function(err, res) {
+          findRes = res;
+          userArr = [];
+          userArr.push(new UserRestmon.model({fn:'Cob', ln:'Doe', ph:'555-555-5555'})); // middle
+          userArr.push(new UserRestmon.model({fn:'John', ln:'Doe', ph:'555-555-5557'})); // after
+          userArr.push(new UserRestmon.model({fn:'John', ln:'Aoe', ph:'555-555-5555'})); // after
+          userArr.push(new UserRestmon.model({fn:'Kevin', ln:'Doe', ph:'555-555-5555'})); // after
+          userArr.push(new UserRestmon.model({fn:'Acorn', ln:'Doe', ph:'555-555-5555'})); // before
+          userArr.push(new UserRestmon.model({fn:'John', ln:'Zoe', ph:'555-555-5555'})); // before
+          userArr.push(new UserRestmon.model({fn:'John', ln:'Doe', ph:'555-555-5550'})); // before
+          UserRestmon.create(userArr, function() {
+            done();
+          });
+        });
+      });
+    });
+
+    afterEach(function(done) {
+      UserRestmon.model.remove({}, function() {
+        delete mongoose.modelSchemas['User'];
+        delete mongoose.models['User'];
+        done();
+      });
+    });
+
+    it('sorts the entities correctly', function() {
+      expect(findRes.data[0].fn).toBe('Bob');
+      expect(findRes.data[1].fn).toBe('John');
+      expect(findRes.data[1].ln).toBe('Foe');
+      expect(findRes.data[2].fn).toBe('John');
+      expect(findRes.data[2].ln).toBe('Doe');
+      expect(findRes.data[2].ph).toBe('555-555-5554');
+      expect(findRes.data[3].fn).toBe('john');
+      expect(findRes.data[3].ln).toBe('Doe');
+      expect(findRes.data[3].ph).toBe('555-555-5555');
+      expect(findRes.data[4].fn).toBe('John');
+      expect(findRes.data[4].ln).toBe('Doe');
+      expect(findRes.data[4].ph).toBe('555-555-5556');
+    });
+
+    describe('after', function() {
+      var afterRes;
+
+      beforeEach(function(done) {
+        var cursor = new Restmon.Cursor(findRes._meta.last);
+        UserRestmon.find({})
+        .sort({fn:1, ln:-1, ph:1})
+        .after(cursor)
+        .exec(function(err, res) {
+          afterRes = res;
+          done();
+        });
+      });
+
+      it('executes after correctly', function() {
+        expect(afterRes.data.length).toBe(3);
+        expect(afterRes.data[0].fn).toBe('John');
+        expect(afterRes.data[0].ln).toBe('Doe');
+        expect(afterRes.data[0].ph).toBe('555-555-5557');
+        expect(afterRes.data[1].fn).toBe('John');
+        expect(afterRes.data[1].ln).toBe('Aoe');
+        expect(afterRes.data[2].fn).toBe('Kevin');
       });
     });
   });
