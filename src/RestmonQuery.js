@@ -5,8 +5,29 @@ module.exports = function() {
     this.mongooseQuery = mongooseQuery;
   };
 
-  RestmonQuery.prototype.sort = function(sortBy) {
-    var key, property, finalSort;
+  var convertSortByString = function(sort) {
+    var splitStr, trimmedArr, sortBy;
+    sortBy = {};
+    splitStr = sort.split(',');
+    trimmedArr = [];
+    splitStr.forEach(function(str) {
+      trimmedArr.push(str.trim());
+    });
+    trimmedArr.forEach(function(sortClause) {
+      if (sortClause[0] === '+') {
+        sortBy[sortClause.substr(1, sortClause.length - 1)] = 1;
+      } else if (sortClause[0] === '-') {
+        sortBy[sortClause.substr(1, sortClause.length - 1)] = -1;
+      } else {
+        sortBy[sortClause] = 1;
+      }
+    });
+    return sortBy;
+  };
+
+  RestmonQuery.prototype.sort = function(sort) {
+    var key, property, finalSort, sortBy;
+    sortBy = typeof(sort) == 'string' ? convertSortByString(sort) : sort;
     finalSort = {};
     this.sort_ = sortBy;
     for (key in sortBy) {

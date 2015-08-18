@@ -570,7 +570,7 @@ describe('ignoreCase / toLowerCase', function () {
       ln:{type:String, sortable:true},
       ph:{type:String, sortable:true}
     };
-    var UserRestmon, findRes;
+    var UserRestmon, findRes, sortByStringRes;
 
     beforeEach(function(done) {
       UserRestmon = new Restmon('User', schema);
@@ -585,16 +585,21 @@ describe('ignoreCase / toLowerCase', function () {
         .sort({fn:1, ln:-1, ph:1})
         .exec(function(err, res) {
           findRes = res;
-          userArr = [];
-          userArr.push(new UserRestmon.model({fn:'Cob', ln:'Doe', ph:'555-555-5555'})); // middle
-          userArr.push(new UserRestmon.model({fn:'John', ln:'Doe', ph:'555-555-5557'})); // after
-          userArr.push(new UserRestmon.model({fn:'John', ln:'Aoe', ph:'555-555-5555'})); // after
-          userArr.push(new UserRestmon.model({fn:'Kevin', ln:'Doe', ph:'555-555-5555'})); // after
-          userArr.push(new UserRestmon.model({fn:'Acorn', ln:'Doe', ph:'555-555-5555'})); // before
-          userArr.push(new UserRestmon.model({fn:'Bob', ln:'Foe', ph:'555-555-5555'})); // before
-          userArr.push(new UserRestmon.model({fn:'Bob', ln:'Doe', ph:'555-555-5554'})); // before
-          UserRestmon.create(userArr, function() {
-            done();
+          UserRestmon.find({})
+          .sort('fn,-ln, +ph')
+          .exec(function(err, res) {
+            sortByStringRes = res;
+            userArr = [];
+            userArr.push(new UserRestmon.model({fn:'Cob', ln:'Doe', ph:'555-555-5555'})); // middle
+            userArr.push(new UserRestmon.model({fn:'John', ln:'Doe', ph:'555-555-5557'})); // after
+            userArr.push(new UserRestmon.model({fn:'John', ln:'Aoe', ph:'555-555-5555'})); // after
+            userArr.push(new UserRestmon.model({fn:'Kevin', ln:'Doe', ph:'555-555-5555'})); // after
+            userArr.push(new UserRestmon.model({fn:'Acorn', ln:'Doe', ph:'555-555-5555'})); // before
+            userArr.push(new UserRestmon.model({fn:'Bob', ln:'Foe', ph:'555-555-5555'})); // before
+            userArr.push(new UserRestmon.model({fn:'Bob', ln:'Doe', ph:'555-555-5554'})); // before
+            UserRestmon.create(userArr, function() {
+              done();
+            });
           });
         });
       });
@@ -621,6 +626,21 @@ describe('ignoreCase / toLowerCase', function () {
       expect(findRes.data[4].fn).toBe('John');
       expect(findRes.data[4].ln).toBe('Doe');
       expect(findRes.data[4].ph).toBe('555-555-5556');
+    });
+
+    it('sorts the entities correctly using string sort', function() {
+      expect(sortByStringRes.data[0].fn).toBe('Bob');
+      expect(sortByStringRes.data[1].fn).toBe('John');
+      expect(sortByStringRes.data[1].ln).toBe('Foe');
+      expect(sortByStringRes.data[2].fn).toBe('John');
+      expect(sortByStringRes.data[2].ln).toBe('Doe');
+      expect(sortByStringRes.data[2].ph).toBe('555-555-5554');
+      expect(sortByStringRes.data[3].fn).toBe('john');
+      expect(sortByStringRes.data[3].ln).toBe('Doe');
+      expect(sortByStringRes.data[3].ph).toBe('555-555-5555');
+      expect(sortByStringRes.data[4].fn).toBe('John');
+      expect(sortByStringRes.data[4].ln).toBe('Doe');
+      expect(sortByStringRes.data[4].ph).toBe('555-555-5556');
     });
 
     describe('after', function() {
@@ -662,7 +682,7 @@ describe('ignoreCase / toLowerCase', function () {
         });
       });
 
-      it('executes after correctly', function() {
+      it('executes before correctly', function() {
         expect(beforeRes.data.length).toBe(3);
         expect(beforeRes.data[0].fn).toBe('Acorn');
         expect(beforeRes.data[0].ln).toBe('Doe');
