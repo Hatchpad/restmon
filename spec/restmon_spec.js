@@ -4,7 +4,6 @@ mongoose.connect(mongoUri);
 var Restmon = require('../')(mongoose);
 
 describe('ignoreCase / toLowerCase', function () {
-  /*
   describe('when ignoreCase is true', function () {
     var schema = {
       created:{type:Date, default:Date.now, index:true},
@@ -565,8 +564,6 @@ describe('ignoreCase / toLowerCase', function () {
     });
   });
 
-  */
-
   describe('multi field sorting', function() {
     var schema = {
       fn:{type:String, sortable:true},
@@ -594,8 +591,8 @@ describe('ignoreCase / toLowerCase', function () {
           userArr.push(new UserRestmon.model({fn:'John', ln:'Aoe', ph:'555-555-5555'})); // after
           userArr.push(new UserRestmon.model({fn:'Kevin', ln:'Doe', ph:'555-555-5555'})); // after
           userArr.push(new UserRestmon.model({fn:'Acorn', ln:'Doe', ph:'555-555-5555'})); // before
-          userArr.push(new UserRestmon.model({fn:'John', ln:'Zoe', ph:'555-555-5555'})); // before
-          userArr.push(new UserRestmon.model({fn:'John', ln:'Doe', ph:'555-555-5550'})); // before
+          userArr.push(new UserRestmon.model({fn:'Bob', ln:'Foe', ph:'555-555-5555'})); // before
+          userArr.push(new UserRestmon.model({fn:'Bob', ln:'Doe', ph:'555-555-5554'})); // before
           UserRestmon.create(userArr, function() {
             done();
           });
@@ -648,6 +645,31 @@ describe('ignoreCase / toLowerCase', function () {
         expect(afterRes.data[1].fn).toBe('John');
         expect(afterRes.data[1].ln).toBe('Aoe');
         expect(afterRes.data[2].fn).toBe('Kevin');
+      });
+    });
+
+    describe('before', function() {
+      var beforeRes;
+
+      beforeEach(function(done) {
+        var cursor = new Restmon.Cursor(findRes._meta.first);
+        UserRestmon.find({})
+        .sort({fn:1, ln:-1, ph:1})
+        .before(cursor)
+        .exec(function(err, res) {
+          beforeRes = res;
+          done();
+        });
+      });
+
+      it('executes after correctly', function() {
+        expect(beforeRes.data.length).toBe(3);
+        expect(beforeRes.data[0].fn).toBe('Acorn');
+        expect(beforeRes.data[0].ln).toBe('Doe');
+        expect(beforeRes.data[1].fn).toBe('Bob');
+        expect(beforeRes.data[1].ln).toBe('Foe');
+        expect(beforeRes.data[2].fn).toBe('Bob');
+        expect(beforeRes.data[2].ln).toBe('Doe');
       });
     });
   });
