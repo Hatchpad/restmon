@@ -693,4 +693,68 @@ describe('ignoreCase / toLowerCase', function () {
       });
     });
   });
+
+  describe('update', function() {
+    var schema = {
+      fn:{type:String, sortable:true},
+      ln:{type:String, sortable:true},
+      company:{type:String, sortable:true}
+    };
+    var UserRestmon, findRes, sortByStringRes;
+
+    beforeEach(function(done) {
+      UserRestmon = new Restmon('User', schema);
+      var userArr = [];
+      userArr.push(new UserRestmon.model({fn:'John', ln:'Doe', company:'Google'}));  // 4
+      userArr.push(new UserRestmon.model({fn:'Bob', ln:'Doe', company:'Facebook'}));   // 0
+      userArr.push(new UserRestmon.model({fn:'John', ln:'Foe', company:'Google'}));  // 1
+      userArr.push(new UserRestmon.model({fn:'john', ln:'Doe', company:'Facebook'}));  // 3
+      userArr.push(new UserRestmon.model({fn:'John', ln:'Doe', company:'SAP'}));  // 2
+      UserRestmon.create(userArr, function() {
+        setTimeout(function() {
+          done();
+        }, 5);
+      });
+    });
+
+    afterEach(function(done) {
+      UserRestmon.model.remove({}, function() {
+        delete mongoose.modelSchemas['User'];
+        delete mongoose.models['User'];
+        done();
+      });
+    });
+
+    describe('before the update', function() {
+
+      var beforeRes, afterRes;
+
+      beforeEach(function(done) {
+        UserRestmon.find({})
+        .sort('company')
+        .exec(function(err, res) {
+          beforeRes = res;
+          UserRestmon.update({}, {company:'Hatchpad.io'}, {multi:true}, function(err) {
+            UserRestmon.find({})
+            .sort('company')
+            .exec(function(err, res) {
+              afterRes = res;
+              done();
+            });
+          });
+        });
+      });
+
+      it('updates the docs correctly', function() {
+        expect(beforeRes.data[0].company).toBe('Facebook');
+        expect(beforeRes.data[0]._company).toBe('facebook');
+        expect(beforeRes.data[4].company).toBe('SAP');
+        expect(beforeRes.data[4]._company).toBe('sap');
+        for (var i = 0; i < 5; i++) {
+          expect(afterRes.data[i].company).toBe('Hatchpad.io');
+          expect(afterRes.data[i]._company).toBe('hatchpad.io');
+        }
+      });
+    });
+  });
 });

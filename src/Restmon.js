@@ -55,11 +55,30 @@ module.exports = function(mongoose, secret) {
     var key;
     for (key in entity) {
       if (this.schema_[key] && this.schema_[key].sortable && this.schema_[key].type == String && this.isIgnoreCase(key) && entity.isModified(key)) {
-        entity['_' + key] = entity[key].toLowerCase();
+        if (entity[key]) {
+          entity['_' + key] = entity[key].toLowerCase();
+        } else {
+          entity['_' + key] = entity[key];
+        }
       }
     }
     entity[this.config_.updated] = Date.now();
     entity.save(cb);
+  };
+
+  Restmon.prototype.update = function(conditions, doc, options, cb) {
+    var key;
+    for (key in doc) {
+      if (this.schema_[key] && this.schema_[key].sortable && this.schema_[key].type == String && this.isIgnoreCase(key)) {
+        if (doc[key]) {
+          doc['_' + key] = doc[key].toLowerCase();
+        } else if (doc[key] !== undefined) {
+          doc['_' + key] = doc[key];
+        }
+      }
+    }
+    doc[this.config_.updated] = Date.now();
+    this.model.update(conditions, doc, options, cb);
   };
 
   Restmon.prototype.create = function(entities, cb) {
