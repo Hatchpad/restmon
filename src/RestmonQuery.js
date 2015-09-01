@@ -54,6 +54,11 @@ module.exports = function() {
     return this;
   };
 
+  RestmonQuery.prototype.select = function(select) {
+    this.mongooseQuery = this.mongooseQuery.select(select);
+    return this;
+  };
+
   var buildCursorQuery = function(cursor, queryDirection) {
     var i, query, appendQueryKey, naturalDirection, sortBy, sortByKeys, key;
 

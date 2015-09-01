@@ -643,6 +643,28 @@ describe('ignoreCase / toLowerCase', function () {
       expect(sortByStringRes.data[4].ph).toBe('555-555-5556');
     });
 
+    describe('select', function() {
+      var selectRes;
+
+      beforeEach(function(done) {
+        var cursor = new Restmon.Cursor(findRes._meta.last);
+        UserRestmon.find({})
+        .select('fn ln')
+        .sort({fn:1, ln:-1, ph:1})
+        .after(cursor)
+        .exec(function(err, res) {
+          afterRes = res;
+          done();
+        });
+      });
+
+      it('only gets the fields included in the select', function() {
+        expect(afterRes.data[0].fn).toBe('John');
+        expect(afterRes.data[0].ln).toBe('Doe');
+        expect(afterRes.data[0].ph).toBe(undefined);
+      });
+    });
+
     describe('after', function() {
       var afterRes;
 
