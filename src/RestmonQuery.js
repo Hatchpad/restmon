@@ -158,8 +158,10 @@ module.exports = function() {
     return this.mongooseQuery.exec(function(err, data) {
       if (data && Array.isArray(data)) {
         response.data = data;
-        response._meta.first = this.restmon_.getCursor(data[0]).encode();
-        response._meta.last = this.restmon_.getCursor(data[data.length - 1]).encode();
+        if (data.length > 0) {
+          response._meta.first = this.restmon_.getCursor(data[0]).encode();
+          response._meta.last = this.restmon_.getCursor(data[data.length - 1]).encode();
+        }
         for (i = 0; i < data.length; i++) {
           if (!response._meta.freshest || data[i][this.restmon_.config_.updated] > response._meta.freshest) {
             response._meta.freshest = data[i][this.restmon_.config_.updated];
