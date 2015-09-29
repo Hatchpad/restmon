@@ -1,5 +1,5 @@
 module.exports = function(mongoose, secret) {
-  var RestmonQuery = require('./RestmonQuery')();
+  var RestmonQuery = require('./RestmonQuery')(secret);
   var RestmonCursor = require('./RestmonCursor')(secret);
 
   if (!mongoose) {

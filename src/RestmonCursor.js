@@ -10,6 +10,8 @@ module.exports = function(secret) {
     var cursorObj, key;
     if (typeof(cursor) === 'string') {
       cursorObj = jwt.decode(cursor, secret);
+    } else if (cursor.cursor_) {
+      cursorObj = cursor.cursor_;
     } else {
       cursorObj = cursor;
     }

@@ -1,7 +1,8 @@
 var mongoose = require('mongoose');
 var mongoUri = 'mongodb://@localhost/restmon';
 mongoose.connect(mongoUri);
-var Restmon = require('../')(mongoose);
+var secret = 'a_secret';
+var Restmon = require('../')(mongoose, secret);
 
 describe('ignoreCase / toLowerCase', function () {
   describe('when ignoreCase is true', function () {

@@ -1,4 +1,6 @@
-module.exports = function() {
+module.exports = function(secret) {
+
+  var RestmonCursor = require('./RestmonCursor')(secret);
 
   var RestmonQuery = function(restmon, mongooseQuery) {
     this.restmon_ = restmon;
@@ -125,15 +127,17 @@ module.exports = function() {
   };
 
   RestmonQuery.prototype.after = function(cursor) {
+    var cursorObj = new RestmonCursor(cursor);
     this.mongooseQuery._conditions.$and.push(
-      buildCursorQuery.bind(this)(cursor, 'after')
+      buildCursorQuery.bind(this)(cursorObj, 'after')
     );
     return this;
   };
 
   RestmonQuery.prototype.before = function(cursor) {
+    var cursorObj = new RestmonCursor(cursor);
     this.mongooseQuery._conditions.$and.push(
-      buildCursorQuery.bind(this)(cursor, 'before')
+      buildCursorQuery.bind(this)(cursorObj, 'before')
     );
     return this;
   };
