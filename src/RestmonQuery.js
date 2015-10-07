@@ -83,8 +83,9 @@ module.exports = function(secret) {
     query.$or = [];
 
     appendQueryKey = function(queryOr, idx) {
-      var sortProp, and, or, part, field, fieldValue, rawField;
+      var sortProp, and, or, part, part2, field, fieldValue, rawField;
       part = {};
+      part2 = null;
       field = sortByKeys[idx];
       if (this.restmon_.isIgnoreCase(field)) {
         rawField = '_' + field;
@@ -105,13 +106,19 @@ module.exports = function(secret) {
         }
       } else {
         if (fieldValue === null) {
-          // should always be false
-          part[rawField] = {$and:[{$eq: null, $ne: null}]};
+          part = null;
         } else {
           part[rawField] = {$lt: fieldValue};
+          part2 = {};
+          part2[rawField] = {$eq: null};
         }
       }
-      queryOr.push(part);
+      if (part) {
+        queryOr.push(part);
+      }
+      if (part2) {
+        queryOr.push(part2);
+      }
       and = {$and: []};
       queryOr.push(and);
       part = {};
