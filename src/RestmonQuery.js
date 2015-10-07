@@ -88,16 +88,28 @@ module.exports = function(secret) {
       field = sortByKeys[idx];
       if (this.restmon_.isIgnoreCase(field)) {
         rawField = '_' + field;
-        fieldValue = cursor.get(field).toLowerCase();
+        fieldValue = cursor.get(field) ? cursor.get(field).toLowerCase() : cursor.get(field);
       } else {
         rawField = field;
         fieldValue = cursor.get(field);
       }
+      if (fieldValue === undefined) {
+        fieldValue = null;
+      }
       sortProp = sortBy[field];
       if (sortProp * naturalDirection > 0) {
-        part[rawField] = {$gt: fieldValue};
+        if (fieldValue === null) {
+          part[rawField] = {$ne: fieldValue};
+        } else {
+          part[rawField] = {$gt: fieldValue};
+        }
       } else {
-        part[rawField] = {$lt: fieldValue};
+        if (fieldValue === null) {
+          // should always be false
+          part[rawField] = {$and:[{$eq: null, $ne: null}]};
+        } else {
+          part[rawField] = {$lt: fieldValue};
+        }
       }
       queryOr.push(part);
       and = {$and: []};

@@ -569,7 +569,8 @@ describe('ignoreCase / toLowerCase', function () {
     var schema = {
       fn:{type:String, sortable:true},
       ln:{type:String, sortable:true},
-      ph:{type:String, sortable:true}
+      ph:{type:String, sortable:true},
+      em:{type:String, sortable:true}
     };
     var UserRestmon, findRes, sortByStringRes;
 
@@ -778,6 +779,68 @@ describe('ignoreCase / toLowerCase', function () {
           expect(afterRes.data[i]._company).toBe('hatchpad.io');
         }
       });
+    });
+  });
+
+  describe('sorting with null and undefined fields', function() {
+    var schema = {
+      un:{type:String, sortable:true},
+      other:{type:String, sortable:true}
+    };
+    var UserRestmon, result1, result2, result3, sortByStringRes;
+
+    beforeEach(function(done) {
+      UserRestmon = new Restmon('User', schema);
+      var userArr = [];
+      userArr.push(new UserRestmon.model({un:'un4', other:'other1'}));
+      userArr.push(new UserRestmon.model({un:null, other:'other2'}));
+      userArr.push(new UserRestmon.model({other:'other3'}));
+      userArr.push(new UserRestmon.model({un:'un1', other:'other4'}));
+      userArr.push(new UserRestmon.model({other:'other5'}));
+      UserRestmon.create(userArr, function() {
+        UserRestmon.find({})
+        .sort('un,other')
+        .limit(2)
+        .exec(function(err, res) {
+          result1 = res;
+          var cursor = new Restmon.Cursor(result1._meta.last);
+          UserRestmon.find({})
+          .sort('un,other')
+          .after(cursor)
+          .limit(2)
+          .exec(function(err, res) {
+            result2 = res;
+            var cursor2 = new Restmon.Cursor(result2._meta.last);
+            UserRestmon.find({})
+            .sort('un,other')
+            .after(cursor2)
+            .limit(2)
+            .exec(function(err, res) {
+              result3 = res;
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    afterEach(function(done) {
+      UserRestmon.model.remove({}, function() {
+        delete mongoose.modelSchemas['User'];
+        delete mongoose.models['User'];
+        done();
+      });
+    });
+
+    it('sorts the first fetch correctly', function() {
+      expect(result1.data.length).toBe(2);
+      expect(result1.data[0].other).toBe('other2');
+      expect(result1.data[1].other).toBe('other3');
+      expect(result2.data.length).toBe(2);
+      expect(result2.data[0].other).toBe('other5');
+      expect(result2.data[1].other).toBe('other4');
+      expect(result3.data.length).toBe(1);
+      expect(result3.data[0].other).toBe('other1');
     });
   });
 });

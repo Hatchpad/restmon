@@ -89,7 +89,7 @@ module.exports = function(mongoose, secret) {
     entities.forEach(function(entity) {
       for (key in entity) {
         if (this.schema_[key] && this.schema_[key].sortable && this.schema_[key].type == String && this.isIgnoreCase(key) && entity.isModified(key)) {
-          entity['_' + key] = entity[key].toLowerCase();
+          entity['_' + key] = entity[key] ? entity[key].toLowerCase() : entity[key];
         }
       }
       entity[this.config_.updated] = Date.now();
