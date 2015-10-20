@@ -19,6 +19,7 @@ module.exports = function(mongoose, secret) {
   };
 
   Restmon.prototype.isIgnoreCase = function(fieldName) {
+    if (fieldName === this.config_.updated) return false;
     var property = this.schema_[fieldName];
     if (property.type != String) return false;
     if (property.ignoreCase === true) return true;
@@ -35,6 +36,7 @@ module.exports = function(mongoose, secret) {
     if (!schema[this.config_.updated]) {
       builtSchema[this.config_.updated] = {type:Date, default:Date.now, sortable:true};
     }
+    this.sortables_.push(this.config_.updated);
     for (key in schema) {
       property = schema[key];
       builtSchema[key] = property;

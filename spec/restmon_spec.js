@@ -243,6 +243,65 @@ describe('ignoreCase / toLowerCase', function () {
     });
   });
 
+  describe('sort by updated', function() {
+    var schema = {
+      name:{type:String}
+    };
+    var UserRestmon, res;
+
+    beforeEach(function(done) {
+      UserRestmon = new Restmon('User', schema);
+      var u1 = new UserRestmon.model({name:'bjohn'});
+      var u2 = new UserRestmon.model({name:'ajohn'});
+      var u3 = new UserRestmon.model({name:'cjohn'});
+      UserRestmon.save(u1, function(err, data) {
+        setTimeout(function() {
+          UserRestmon.save(u2, function(err, data) {
+            setTimeout(function() {
+              UserRestmon.save(u3, function(err, data) {
+                u2.name = 'djohn';
+                UserRestmon.save(u2, function(err, data) {
+                  done();
+                });
+              });
+            }, 2);
+          });
+        }, 2);
+      });
+    });
+
+    afterEach(function(done) {
+      UserRestmon.model.remove({}, function() {
+        delete mongoose.modelSchemas['User'];
+        delete mongoose.models['User'];
+        done();
+      });
+    });
+
+    describe('sorting by updated', function() {
+      var foundUsers = [];
+
+      beforeEach(function(done) {
+        UserRestmon.find({})
+        .sort('-updated')
+        .exec(function(err, res) {
+          foundUsers = res.data;
+          done();
+        });
+      });
+
+      it('finds the users', function() {
+        expect(foundUsers.length).toBe(3);
+      });
+
+      it('sorts this users by updated', function() {
+        expect(foundUsers[0].name).toBe('djohn');
+        expect(foundUsers[1].name).toBe('cjohn');
+        expect(foundUsers[2].name).toBe('bjohn');
+      });
+    });
+  });
+
   describe('sorting', function() {
     var schema = {
       created:{type:Date, default:Date.now, sortable:true},
