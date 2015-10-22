@@ -51,8 +51,8 @@ module.exports = function(secret) {
     return this;
   };
 
-  RestmonQuery.prototype.populate = function(populate, options) {
-    this.mongooseQuery = this.mongooseQuery.populate(populate, options);
+  RestmonQuery.prototype.populate = function(populate, select, model, match, options) {
+    this.mongooseQuery = this.mongooseQuery.populate(populate, select, model, match, options);
     return this;
   };
 
