@@ -122,11 +122,12 @@ module.exports = function(mongoose, secret) {
     cursor = {};
     for(key in this.schema_) {
       property = this.schema_[key];
-      if (property.sortable || key === this.config_.updated) {
+      if (property.sortable) {
         cursor[key] = entity[key];
       }
     }
     cursor[this.config_.id] = entity[this.config_.id];
+    cursor[this.config_.updated] = entity[this.config_.updated];
     return new RestmonCursor(cursor);
   };
 

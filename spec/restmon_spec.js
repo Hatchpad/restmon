@@ -207,6 +207,7 @@ describe('ignoreCase / toLowerCase', function () {
     var UserRestmon;
     var savedUser;
     var cursor;
+    var now = new Date();
 
     beforeEach(function(done) {
       UserRestmon = new Restmon('User', schema);
@@ -240,6 +241,8 @@ describe('ignoreCase / toLowerCase', function () {
       expect(cursor.get('lastName')).toBe('Doe');
       expect(cursor.get('ssn')).toBe(undefined);
       expect(cursor.get('about')).toBe(undefined);
+      expect(cursor.get('updated')).not.toBe(undefined);
+      expect(cursor.get('updated')).not.toBe(null);
     });
   });
 
