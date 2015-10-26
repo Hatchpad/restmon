@@ -122,7 +122,7 @@ module.exports = function(mongoose, secret) {
     cursor = {};
     for(key in this.schema_) {
       property = this.schema_[key];
-      if (property.sortable) {
+      if (property.sortable || key === this.config_.updated) {
         cursor[key] = entity[key];
       }
     }
