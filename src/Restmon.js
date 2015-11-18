@@ -6,7 +6,7 @@ module.exports = function(mongoose, secret) {
     throw new Error('mongoose is required');
   }
 
-  var Restmon = function(name, schema, config) {
+  var Restmon = function(name, schema, config, doBeforeModelCreation) {
     config = config || {};
     config.ignoreCase = (config.ignoreCase === false) ? false : true;
     config.id = config.id || '_id';
@@ -15,6 +15,9 @@ module.exports = function(mongoose, secret) {
 
     this.schema_ = schema;
     this.generateMongooseSchema(schema);
+    if (doBeforeModelCreation) {
+      doBeforeModelCreation.bind(this)();
+    }
     this.model = mongoose.model(name, this.mongooseSchema_);
   };
 
