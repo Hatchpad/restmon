@@ -226,7 +226,7 @@ module.exports = Person;
 
 ### Find Response
 
-A response for a restmon find query will have metadata plush the data so it's important to document what you should expect.
+A response for a restmon find query will have metadata plus the array of objects so it's important to document what you should expect.
 
 Given the following code block:
 ```
