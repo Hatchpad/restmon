@@ -156,15 +156,16 @@ var Restmon = require('@hatchpad/restmon')(mongoose, 'a_secret_token', options);
   * **String** - name of the id field
   * *default* '_id'
 
-### Defaining Restmon & Schema
+### Defining Restmon & Schema
 
-A restmon sechema is defined exactly the same way as a normal Mongoose schema. The only exception is that fields that are sortable (that need to be included in cursors) need to be marked with the sortable property.  If a field is marked as sortable, it will be indexed, so you can exclude the index property.
+A restmon schema is defined exactly the same way as a normal Mongoose schema. The only exceptions are that fields that are sortable (that need to be included in cursors) need to be marked with the sortable property and you can configure each sortable String field with *ignoreCase*.  If a field is marked as sortable, it will be indexed, so you can exclude the index property.
 
 ```
 var ObjectId = ...;
 var schema = {
   firstName:{type:String, sortable:true},   // notice sortable property
   lastName:{type:String, sortable:true},    // sortable fields are also indexed
+  nickname:{type:String, sortable:true, ignoreCase:false},    // will sort uppercase letters first
   dob:{type:Date, sortable: true},
   companyId:{type:ObjectId, index: true}     // this field is indexed but not sortable
 };
