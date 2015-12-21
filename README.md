@@ -188,10 +188,20 @@ module.exports = Person;
 **Remember** to use the Restmon modification functions for updating and creating documents so that it will automatically track the updated date.
 
 ### RestmonQuery
-* **sort**(*sortBy*) - *builder pattern*
+* **sort**(*sortBy*)
   * *sortBy* can be an Ojbect like this: {firstName:1,lastName:-1,dob:1}
   * *sortBy* can be a String like this: 'firstName,-lastName,+dob'
   * returns **RestmonQuery** (this)
-* **limit**(*limit*) - *builder pattern*
+* **limit**(*limit*)
   * *limit* - Max **Number** of documents to retreive
   * returns **RestmonQuery** (this)
+* **populate**(*populate*, *select*, *model*, *match*, *options*)
+  * See Mongoose documentation
+  * returns **RestmonQuery** (this)
+* **select**(*select*)
+  * See Mongoose documentation
+  * returns **RestmonQuery** (this)
+* **after**(*cursor*)
+  * *cursor* - **String** Encoded cursor of a document
+  * Tells Restmon to only return documents after the cursor given the particular sort
+  * return **RestmonQuery** (this)
