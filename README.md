@@ -186,7 +186,5 @@ module.exports = Person;
   * Returns a **RestmonQuery** object
 * **findOne**(*criteria*, *callback*)
   * Returns a **RestmonQuery** object
-* **getCursor**(*fieldName*)
-  * Returns a **RestmonCursor** object for the field
 
 **Remember** to use the Restmon modification functions for updating and creating documents so that it will automatically track the updated date.
