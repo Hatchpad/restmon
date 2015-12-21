@@ -48,24 +48,24 @@ module.exports = Person;
 
 Cursors are a string token representing all the sortable fields of an object. Using the metadata returned in a restmon query, we can easily set up pagination or polling without trusting that the data objects will not change or be removed from the database.
 
-#### Pagination Examples
+#### Pagination Example
 
-##### First *Page*
+##### *First Page*
 ```
 // include the model object
 var Person = require('./person.js');
 
 var query = {};
 Person.find(query)
-.sort({lastName:1, firstName:-1})  // sort by firstName asc then lastName desc
+.sort({lastName:1, firstName:-1})  // sort by lastName asc then firstName desc
 .limit(2)
 .exec(function(err, response) {
-  var personArr = response.data;   // [*John Doe*, *Bill Doe*]
+  var personArr = response.data;   // ['John Doe', 'Bill Doe']
   var lastPersonCursor = response._meta.last;
 });
 ```
 
-##### Second *Page*
+##### *Second Page*
 
 Assume we have retained *lastPersonCursor* from the previous code block
 ```
@@ -73,8 +73,66 @@ var query = {};
 Person.find(query)
 .sort({'lastName,-firstName'})    // string representation of sort
 .limit(2)
-.after(lastPersonCursor)          // use of *after*
+.after(lastPersonCursor)          // use of "after"
 .exec(function(err, response) {
-  var personArr = response.data;  // [*Doug Dooley*, *John Smith*]
+  var personArr = response.data;  // ['Doug Dooley', 'John Smith']
 });
 ```
+
+#### Polling Example
+
+##### *First Query*
+```
+// include the model object
+var Person = require('./person.js');
+
+var asOf = new Date();             // keep track of the asOf date
+
+var query = {};
+Person.find(query)
+.sort({lastName:1, firstName:-1})  // sort by lastName asc then firstName desc
+.limit(2)
+.exec(function(err, response) {
+  var personArr = response.data;   // ['John Doe', 'Bill Doe']
+  var lastPersonCursor = response._meta.last;
+});
+```
+
+##### *Polling*
+
+Assume we have retained *lastPersonCursor* and *asOf* from the previous code block
+```
+var query = {};
+Person.find(query)
+.sort({'lastName,-firstName'})    // string representation of sort
+.limit(2)
+.before(lastPersonCursor)         // use of "after"
+.since(asOf)
+.exec(function(err, response) {
+  // will only return objects that are new or have been updated
+  var personArr = response.data;
+});
+```
+
+### Updating
+
+Example showing automatic update tracking date and sortable string duplication
+'''
+var person = {
+  firstName: 'Rick',
+  lastName: 'Peoples'
+};
+Person.save(person, function(err, savedPerson) {
+});
+'''
+
+In this example, savedPerson will be this
+'''
+{
+  _firstName: 'rick',
+  firstName: 'Rick',
+  _lastName: 'peoples',
+  lastName: 'Peoples',
+  updated: "the current date/time"
+}
+'''
