@@ -145,5 +145,5 @@ var options = {ignoreCase: false};
 var Restmon = require('@hatchpad/restmon')(mongoose, 'a_secret_token', options);
 ```
 
-* ##### ignoreCase
+* **ignoreCase**
   * **Boolean** Whether to ignore case for strings when sorting
