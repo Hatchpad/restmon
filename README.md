@@ -176,19 +176,17 @@ module.exports = Person;
 
 * **isIgnoreCase**(*fieldName*)
   * *Boolean* whether to ignoreCase for this field on sort
-* **save**(doc, callback)
+* **save**(*doc*, *callback*)
   * Saves the doc using Mongoose.save
-  * callback signature
-    * function(err, savedDoc) {}
-* **update**(conditions, doc, options, callback)
+* **update**(*conditions*, *doc*, *options*, *callback*)
   * Updates the doc using Mongoose.update
-* **create**(docs, callback)
+* **create**(*docs*, *callback*)
   * Creates multiple docs using Mongoose.create
-* **find**(criteria, callback)
+* **find**(*criteria*, *callback*)
   * Returns a **RestmonQuery** object
-* **findOne**(criteria, callback)
+* **findOne**(*criteria*, *callback*)
   * Returns a **RestmonQuery** object
-* **getCursor**(fieldName)
+* **getCursor**(*fieldName*)
   * Returns a **RestmonCursor** object for the field
 
 **Remember** to use the Restmon modification functions for updating and creating documents so that it will automatically track the updated date.
