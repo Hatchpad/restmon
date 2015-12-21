@@ -19,7 +19,7 @@ For use with Mongoose and MongoDB.
 ```
 // Person.js
 var mongoose = require('mongoose');
-var Restmon = require('@hatchpad/restmon')(mongoose, 'a_secret_token');
+var Restmon = require('@hatchpad/restmon')(mongoose, 'a_secret_key');
 
 var schema = {
   firstName:{type:String, sortable:true},   // notice sortable property
