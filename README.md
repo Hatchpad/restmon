@@ -106,7 +106,7 @@ var query = {};
 Person.find(query)
 .sort({'lastName,-firstName'})    // string representation of sort
 .limit(2)
-.before(lastPersonCursor)         // use of "after"
+.before(lastPersonCursor)         // use of "before"
 .since(asOf)
 .exec(function(err, response) {
   // will only return objects that are new or have been updated
@@ -117,17 +117,17 @@ Person.find(query)
 ### Updating
 
 Example showing automatic update tracking date and sortable string duplication
-'''
+```
 var person = {
   firstName: 'Rick',
   lastName: 'Peoples'
 };
 Person.save(person, function(err, savedPerson) {
 });
-'''
+```
 
 In this example, savedPerson will be this
-'''
+```
 {
   _firstName: 'rick',
   firstName: 'Rick',
@@ -135,4 +135,4 @@ In this example, savedPerson will be this
   lastName: 'Peoples',
   updated: "the current date/time"
 }
-'''
+```
