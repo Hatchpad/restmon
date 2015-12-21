@@ -146,4 +146,5 @@ var Restmon = require('@hatchpad/restmon')(mongoose, 'a_secret_token', options);
 ```
 
 * **ignoreCase**
-  * **Boolean** Whether to ignore case for strings when sorting
+  * **Boolean** - whether to ignore case for strings when sorting
+  * *default* true
