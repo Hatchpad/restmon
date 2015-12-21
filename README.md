@@ -148,6 +148,12 @@ var Restmon = require('@hatchpad/restmon')(mongoose, 'a_secret_token', options);
 * **ignoreCase**
   * **Boolean** - whether to ignore case for strings when sorting
   * *default* true
+* **updated**
+  * **String** - name of the field for tracking the data
+  * *default* 'updated'
+* **id**
+  * **String** - name of the id field
+  * *default* '_id'
 
 ### Defaining Restmon & Schema
 
@@ -167,9 +173,22 @@ module.exports = Person;
 ```
 
 ### Restmon
-* **isIgnoreCase(fieldName)**
+
+* **isIgnoreCase**(fieldName)
   * *Boolean* whether to ignoreCase for this field on sort
-* **save(entity, callback)**
-  * Saves the entity
+* **save**(doc, callback)
+  * Saves the doc using Mongoose.save
   * callback signature
-    * function(err, savedEntity) {}
+    * function(err, savedDoc) {}
+* **update**(conditions, doc, options, callback)
+  * Updates the doc using Mongoose.update
+* **create**(docs, callback)
+  * Creates multiple docs using Mongoose.create
+* **find**(criteria, callback)
+  * Returns a **RestmonQuery** object
+* **findOne**(criteria, callback)
+  * Returns a **RestmonQuery** object
+* **getCursor**(fieldName)
+  * Returns a **RestmonCursor** object for the field
+
+**Remember** to use the Restmon modification functions for updating and creating documents so that it will automatically track the updated date.
