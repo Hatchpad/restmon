@@ -136,3 +136,13 @@ In this example, savedPerson will be this
   updated: "the current date/time"
 }
 ```
+
+### Config Options
+
+#### Config Options Example
+```
+var options = {ignoreCase: false};
+var Restmon = require('@hatchpad/restmon')(mongoose, 'a_secret_token', options);
+```
+
+#### ignoreCase **Boolean** Whether to ignore case for strings when sorting
