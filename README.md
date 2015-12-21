@@ -61,7 +61,7 @@ Person.find(query)
 .limit(2)
 .exec(function(err, response) {
   var personArr = response.data;   // ['John Doe', 'Bill Doe']
-  var lastPersonCursor = response._meta.last;
+  var lastPersonCursor = response._meta.last; // see Find Response for details about the response
 });
 ```
 
@@ -223,3 +223,30 @@ module.exports = Person;
   * *callback signature*
     * function(err, result) {}
   * executes the Mongoose query
+
+*** Find Response
+
+A response for a restmon find query will have metadata plush the data so it's important to document what you should expect.
+
+Given the following code block:
+```
+Person.find({})
+.limit(5)
+.sort('lastName')
+.exec(function(err, response) {
+  ...
+});
+```
+
+*response* will be similar to this:
+```
+{
+  _meta: {
+    first: <*cursor* of the first object in the sorted array>,
+    last: <*cursor* of the last object in the sorted array>,
+    freshest: <updated *Date* of the most recently updated object in the array>,
+    stalest: <updated *Date* of the least recently updated object in the array>
+  },
+  data: [{firstName:'...', ...}, ...]
+}
+```
