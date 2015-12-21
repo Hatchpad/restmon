@@ -188,10 +188,10 @@ module.exports = Person;
 **Remember** to use the Restmon modification functions for updating and creating documents so that it will automatically track the updated date.
 
 ### RestmonQuery
-* **sort**(*sortBy*)
+* **sort**(*sortBy*) - *builder pattern*
   * *sortBy* can be an Ojbect like this: {firstName:1,lastName:-1,dob:1}
   * *sortBy* can be a String like this: 'firstName,-lastName,+dob'
   * returns **RestmonQuery** (this)
-* **limit**(*limit*)
+* **limit**(*limit*) - *builder pattern*
   * *limit* - Max **Number** of documents to retreive
   * returns **RestmonQuery** (this)
