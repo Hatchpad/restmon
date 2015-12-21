@@ -205,3 +205,19 @@ module.exports = Person;
   * *cursor* - Encoded **String** of **RestmonCursor** or **RestmonCursor** object
   * Tells Restmon to only return documents after the cursor given the particular sort
   * return **RestmonQuery** (this)
+* **before**(*cursor*)
+  * *cursor* - Encoded **String** of **RestmonCursor** or **RestmonCursor** object
+  * Tells Restmon to only return documents before the cursor given the particular sort
+  * return **RestmonQuery** (this)
+* **since**(*timestamp*)
+  * *timestamp* - *Date* object
+  * Tells Restmon to only return objects that where updated *after* the timestamp
+  * return **RestmonQuery** (this)
+* **until**(*timestamp*)
+  * *timestamp* - *Date* object
+  * Tells Restmon to only return objects that where updated *before* the timestamp
+  * return **RestmonQuery** (this)
+* **exec**(*callback*)
+  * *callback signature*
+    * function(err, result) {}
+  * executes the Mongoose query
