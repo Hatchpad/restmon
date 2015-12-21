@@ -5,7 +5,7 @@ A package that implements common desired functionality of RESTful designs.
 For use with Mongoose and MongoDB.
 
 1. Pagination using cursors that does not rely on page numbers or single field sorting
-2. Automatically duplicating string values to a lower case field for sorting
+2. Automatically duplicating String values to a lower case field for sorting
 3. Automatically updating an "updated" field
 
 ## Installation
@@ -46,7 +46,7 @@ module.exports = Person;
 
 #### Explanation of cursors
 
-Cursors are a string token representing all the sortable fields of an object. Using the metadata returned in a restmon query, we can easily set up pagination or polling without trusting that the data objects will not change or be removed from the database.
+Cursors are a String token representing all the sortable fields of an object. Using the metadata returned in a restmon query, we can easily set up pagination or polling without trusting that the data objects will not change or be removed from the database.
 
 #### Pagination Example
 
@@ -71,7 +71,7 @@ Assume we have retained *lastPersonCursor* from the previous code block
 ```
 var query = {};
 Person.find(query)
-.sort({'lastName,-firstName'})    // string representation of sort
+.sort({'lastName,-firstName'})    // String representation of sort
 .limit(2)
 .after(lastPersonCursor)          // use of "after"
 .exec(function(err, response) {
@@ -104,7 +104,7 @@ Assume we have retained *lastPersonCursor* and *asOf* from the previous code blo
 ```
 var query = {};
 Person.find(query)
-.sort({'lastName,-firstName'})    // string representation of sort
+.sort({'lastName,-firstName'})    // String representation of sort
 .limit(2)
 .before(lastPersonCursor)         // use of "before"
 .since(asOf)
@@ -116,7 +116,7 @@ Person.find(query)
 
 ### Updating
 
-Example showing automatic update tracking date and sortable string duplication
+Example showing automatic update tracking date and sortable String duplication
 ```
 var person = new Person.model({
   firstName: 'Rick',
@@ -146,7 +146,7 @@ var Restmon = require('@hatchpad/restmon')(mongoose, 'a_secret_token', options);
 ```
 
 * **ignoreCase**
-  * **Boolean** - whether to ignore case for strings when sorting
+  * **Boolean** - whether to ignore case for Strings when sorting
     * *This can be overridden in the schema*
   * *default* true
 * **updated**
