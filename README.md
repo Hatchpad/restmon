@@ -118,10 +118,10 @@ Person.find(query)
 
 Example showing automatic update tracking date and sortable string duplication
 ```
-var person = {
+var person = new Person.model({
   firstName: 'Rick',
   lastName: 'Peoples'
-};
+});
 Person.save(person, function(err, savedPerson) {
 });
 ```
@@ -148,3 +148,24 @@ var Restmon = require('@hatchpad/restmon')(mongoose, 'a_secret_token', options);
 * **ignoreCase**
   * **Boolean** - whether to ignore case for strings when sorting
   * *default* true
+
+### Defaining Restmon & Schema
+
+A restmon sechema is defined exactly the same way as a normal Mongoose schema. The only exception is that fields that are sortable (that need to be included in cursors) need to be marked with the sortable property.  If a field is marked as sortable, it will be indexed, so you can exclude the index property.
+
+'''
+var ObjectId = ...;
+var schema = {
+  firstName:{type:String, sortable:true},   // notice sortable property
+  lastName:{type:String, sortable:true},    // sortable fields are also indexed
+  dob:{type:Date, sortable: true},
+  companyId:{type:ObjectId, index: true}     // this field is indexed but not sortable
+};
+
+var Person = new Restmon('Person', schema);
+module.exports = Person;
+'''
+
+### Restmon
+* **isIgnoreCase(fieldName)**
+  * *Boolean* whether the field is ignoring case
