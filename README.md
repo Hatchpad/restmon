@@ -168,4 +168,8 @@ module.exports = Person;
 
 ### Restmon
 * **isIgnoreCase(fieldName)**
-  * *Boolean* whether the field is ignoring case
+  * *Boolean* whether to ignoreCase for this field on sort
+* **save(entity, callback)**
+  * Saves the entity
+  * callback signature
+    * function(err, savedEntity) {}
