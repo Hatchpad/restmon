@@ -174,8 +174,6 @@ module.exports = Person;
 
 ### Restmon
 
-* **isIgnoreCase**(*fieldName*)
-  * *Boolean* whether to ignoreCase for this field on sort
 * **save**(*doc*, *callback*)
   * Saves the doc using Mongoose.save
 * **update**(*conditions*, *doc*, *options*, *callback*)
