@@ -224,7 +224,7 @@ module.exports = Person;
     * function(err, result) {}
   * executes the Mongoose query
 
-*** Find Response
+### Find Response
 
 A response for a restmon find query will have metadata plush the data so it's important to document what you should expect.
 
