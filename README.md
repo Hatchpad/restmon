@@ -202,6 +202,6 @@ module.exports = Person;
   * See Mongoose documentation
   * returns **RestmonQuery** (this)
 * **after**(*cursor*)
-  * *cursor* - **String** Encoded cursor of a document
+  * *cursor* - Encoded **String** of **RestmonCursor** or **RestmonCursor** object
   * Tells Restmon to only return documents after the cursor given the particular sort
   * return **RestmonQuery** (this)
