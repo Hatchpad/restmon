@@ -6,7 +6,7 @@ module.exports = function(mongoose, secret) {
     throw new Error('mongoose is required');
   }
 
-  var Restmon = function(name, schema, config, doBeforeModelCreation) {
+  var Restmon = function(name, schema, config, doBeforeModelCreation, schemaOptions) {
     config = config || {};
     config.ignoreCase = (config.ignoreCase === false) ? false : true;
     config.id = config.id || '_id';
@@ -14,6 +14,7 @@ module.exports = function(mongoose, secret) {
     this.config_ = config;
 
     this.schema_ = schema;
+    this.schemaOptions_ = schemaOptions_;
     this.generateMongooseSchema(schema);
     if (doBeforeModelCreation) {
       doBeforeModelCreation.bind(this)();
@@ -53,7 +54,7 @@ module.exports = function(mongoose, secret) {
         this.sortables_.push(key);
       }
     }
-    this.mongooseSchema_ = new mongoose.Schema(builtSchema);
+    this.mongooseSchema_ = new mongoose.Schema(builtSchema, this.schemaOptions_);
   };
 
   Restmon.prototype.save = function(entity, cb) {
