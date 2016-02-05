@@ -1,6 +1,6 @@
 {
   "name": "@hatchpad/restmon",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "NodeJS package that allows mongoose models to handle rest-like parameters and cursors.",
   "main": "index.js",
   "scripts": {
