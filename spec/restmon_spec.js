@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-var mongoUri = 'mongodb://@localhost/restmon';
+var mongoUri = 'mongodb://localhost/restmon';
 mongoose.connect(mongoUri);
 var secret = 'a_secret';
 var Restmon = require('../')(mongoose, secret);
