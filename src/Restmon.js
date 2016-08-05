@@ -18,7 +18,7 @@ module.exports = function(mongoose, secret) {
     this.generateMongooseSchema(schema);
     if (schemaOptions.plugins) {
       schemaOptions.plugins.forEach(function(plugin) {
-        this.schema_.plugin(plugin);
+        this.schema_.plugin(plugin.plugin, plugin.opts);
       }.bind(this));
     }
     if (doBeforeModelCreation) {
