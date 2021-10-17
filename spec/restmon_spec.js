@@ -1,21 +1,24 @@
-var mongoose = require('mongoose');
-var mongoUri = 'mongodb://localhost/restmon';
-mongoose.connect(mongoUri);
-var secret = 'a_secret';
-var Restmon = require('../')(mongoose, secret);
+const mongoose = require('mongoose');
+const db = require('./db')
+const secret = 'a_secret';
+const Restmon = require('../')(mongoose, secret);
 
-describe('ignoreCase / toLowerCase', function () {
+describe('Restmon tests', function () {
+  beforeAll(async () => await db.connect());
+  afterEach(async () => await db.clearDatabase());
+  afterAll(async () => await db.closeDatabase());
+
   describe('when ignoreCase is true', function () {
-    var schema = {
+    const schema = {
       created:{type:Date, default:Date.now, index:true},
       username:{type:String, sortable:true}
     };
-    var UserRestmon;
-    var savedUser;
+    let UserRestmon;
+    let savedUser;
 
     beforeEach(function(done) {
       UserRestmon = new Restmon('User', schema);
-      var transientUser = new UserRestmon.model({username:'Jason'});
+      const transientUser = new UserRestmon.model({username:'Jason'});
       UserRestmon.save(transientUser, function(err, data) {
         savedUser = data;
         done();
@@ -24,14 +27,13 @@ describe('ignoreCase / toLowerCase', function () {
 
     afterEach(function(done) {
       UserRestmon.model.remove({}, function() {
-        delete mongoose.modelSchemas['User'];
         delete mongoose.models['User'];
         done();
       });
     });
 
     it('adds the lower case field to the schema', function() {
-      var _usernameColumn = UserRestmon.mongooseSchema_.paths._username;
+      const _usernameColumn = UserRestmon.mongooseSchema_.paths._username;
       expect(_usernameColumn.path).toBe('_username');
       expect(_usernameColumn.instance).toBe('String');
       expect(_usernameColumn.options.index).toBe(true);
@@ -48,7 +50,7 @@ describe('ignoreCase / toLowerCase', function () {
     });
 
     describe('find by username with exact match', function() {
-      var foundObj;
+      let foundObj;
 
       beforeEach(function(done) {
         UserRestmon.findOne({username:'Jason'}, function(err, usr) {
@@ -63,7 +65,7 @@ describe('ignoreCase / toLowerCase', function () {
     });
 
     describe('find by username ignoring case', function() {
-      var foundObj;
+      let foundObj;
 
       beforeEach(function(done) {
         UserRestmon.findOne({username:'jason'}, function(err, usr) {
@@ -80,16 +82,16 @@ describe('ignoreCase / toLowerCase', function () {
   });
 
   describe('when ignoreCase is false', function () {
-    var schema = {
+    const schema = {
       created:{type:Date, default:Date.now, index:true},
       username:{type:String, sortable:true, ignoreCase:false}
     };
-    var UserRestmon;
-    var savedUser;
+    let UserRestmon;
+    let savedUser;
 
     beforeEach(function(done) {
       UserRestmon = new Restmon('User', schema);
-      var transientUser = new UserRestmon.model({username:'Jason', ignoreCase:false});
+      const transientUser = new UserRestmon.model({username:'Jason', ignoreCase:false});
       UserRestmon.save(transientUser, function(err, data) {
         savedUser = data;
         done();
@@ -98,14 +100,13 @@ describe('ignoreCase / toLowerCase', function () {
 
     afterEach(function(done) {
       UserRestmon.model.remove({}, function() {
-        delete mongoose.modelSchemas['User'];
         delete mongoose.models['User'];
         done();
       });
     });
 
     it('does not add the lower case field to the schema', function() {
-      var _usernameColumn = UserRestmon.mongooseSchema_.paths._username;
+      const _usernameColumn = UserRestmon.mongooseSchema_.paths._username;
       expect(_usernameColumn).toBe(undefined);
     });
 
@@ -120,7 +121,7 @@ describe('ignoreCase / toLowerCase', function () {
     });
 
     describe('find by username with exact match', function() {
-      var foundObj = undefined;
+      let foundObj = undefined;
 
       beforeEach(function(done) {
         UserRestmon.findOne({username:'Jason'}, function(err, usr) {
@@ -136,7 +137,7 @@ describe('ignoreCase / toLowerCase', function () {
     });
 
     describe('find by username ignoring case', function() {
-      var foundObj = undefined;
+      let foundObj = undefined;
 
       beforeEach(function(done) {
         UserRestmon.findOne({username:'jason'}, function(err, usr) {
@@ -152,19 +153,19 @@ describe('ignoreCase / toLowerCase', function () {
   });
 
   describe('bulk create', function() {
-    var schema = {
+    const schema = {
       created:{type:Date, default:Date.now, sortable:true},
       username:{type:String, sortable:true, ignoreCase:false},
       firstName:{type:String, sortable:true}
     };
 
-    var u1, u2, foundUsers;
+    let u1, u2, foundUsers;
 
     beforeEach(function(done) {
       UserRestmon = new Restmon('User', schema);
       u1 = new UserRestmon.model({username: 'a', firstName: 'John'});
       u2 = new UserRestmon.model({username: 'b', firstName: 'Jane'});
-      UserRestmon.create([u1,u2], function(users) {
+      UserRestmon.create([u1,u2], function() {
         UserRestmon.find({})
         .sort({firstName:1})
         .exec(function(err, res) {
@@ -176,7 +177,6 @@ describe('ignoreCase / toLowerCase', function () {
 
     afterEach(function(done) {
       UserRestmon.model.remove({}, function() {
-        delete mongoose.modelSchemas['User'];
         delete mongoose.models['User'];
         done();
       });
@@ -196,7 +196,7 @@ describe('ignoreCase / toLowerCase', function () {
   });
 
   describe('cursors', function () {
-    var schema = {
+    const schema = {
       created:{type:Date, default:Date.now, sortable:true},
       username:{type:String, sortable:true, ignoreCase:false},
       firstName:{type:String, sortable:true},
@@ -204,14 +204,13 @@ describe('ignoreCase / toLowerCase', function () {
       ssn:{type:String, index:true},
       about:{type:String}
     };
-    var UserRestmon;
-    var savedUser;
-    var cursor;
-    var now = new Date();
+    let UserRestmon;
+    let savedUser;
+    let cursor;
 
     beforeEach(function(done) {
       UserRestmon = new Restmon('User', schema);
-      var transientUser = new UserRestmon.model({
+      const transientUser = new UserRestmon.model({
         username:'boog',
         firstName:'John',
         lastName:'Doe',
@@ -227,7 +226,6 @@ describe('ignoreCase / toLowerCase', function () {
 
     afterEach(function(done) {
       UserRestmon.model.remove({}, function() {
-        delete mongoose.modelSchemas['User'];
         delete mongoose.models['User'];
         done();
       });
@@ -247,16 +245,16 @@ describe('ignoreCase / toLowerCase', function () {
   });
 
   describe('sort by updated', function() {
-    var schema = {
+    const schema = {
       name:{type:String}
     };
-    var UserRestmon, res;
+    let UserRestmon;
 
     beforeEach(function(done) {
       UserRestmon = new Restmon('User', schema);
-      var u1 = new UserRestmon.model({name:'bjohn'});
-      var u2 = new UserRestmon.model({name:'ajohn'});
-      var u3 = new UserRestmon.model({name:'cjohn'});
+      const u1 = new UserRestmon.model({name:'bjohn'});
+      const u2 = new UserRestmon.model({name:'ajohn'});
+      const u3 = new UserRestmon.model({name:'cjohn'});
       UserRestmon.save(u1, function(err, data) {
         setTimeout(function() {
           UserRestmon.save(u2, function(err, data) {
@@ -275,14 +273,13 @@ describe('ignoreCase / toLowerCase', function () {
 
     afterEach(function(done) {
       UserRestmon.model.remove({}, function() {
-        delete mongoose.modelSchemas['User'];
         delete mongoose.models['User'];
         done();
       });
     });
 
     describe('sorting by updated', function() {
-      var foundUsers = [];
+      let foundUsers = [];
 
       beforeEach(function(done) {
         UserRestmon.find({})
@@ -306,7 +303,7 @@ describe('ignoreCase / toLowerCase', function () {
   });
 
   describe('sorting', function() {
-    var schema = {
+    const schema = {
       created:{type:Date, default:Date.now, sortable:true},
       username:{type:String, sortable:true, ignoreCase:false},
       firstName:{type:String, sortable:true},
@@ -314,20 +311,20 @@ describe('ignoreCase / toLowerCase', function () {
       ssn:{type:String, index:true},
       about:{type:String}
     };
-    var UserRestmon;
-    var users = [];
-    var cursors = [];
+    let UserRestmon;
+    let users = [];
+    let cursors = [];
 
     beforeEach(function(done) {
       UserRestmon = new Restmon('User', schema);
-      var transientUser1 = new UserRestmon.model({
+      const transientUser1 = new UserRestmon.model({
         username:'boog',
         firstName:'John',
         lastName:'Doe',
         ssn:'000-00-0000',
         about:'This is a sentence about John.'
       });
-      var transientUser2 = new UserRestmon.model({
+      const transientUser2 = new UserRestmon.model({
         username:'aoog',
         firstName:'Zohn',
         lastName:'Goe',
@@ -347,14 +344,13 @@ describe('ignoreCase / toLowerCase', function () {
 
     afterEach(function(done) {
       UserRestmon.model.remove({}, function() {
-        delete mongoose.modelSchemas['User'];
         delete mongoose.models['User'];
         done();
       });
     });
 
     describe('find by username ignoring case', function() {
-      var foundUsers = [];
+      let foundUsers = [];
 
       beforeEach(function(done) {
         UserRestmon.find({ssn:'000-00-0000'})
@@ -376,7 +372,7 @@ describe('ignoreCase / toLowerCase', function () {
     });
 
     describe('since with results', function() {
-      var response, aboutNow;
+      let response, aboutNow;
 
       beforeEach(function(done) {
         aboutNow = Date.now() - 10000;
@@ -399,7 +395,7 @@ describe('ignoreCase / toLowerCase', function () {
     });
 
     describe('since without results', function() {
-      var response, aboutNow;
+      let response, aboutNow;
 
       beforeEach(function(done) {
         aboutNow = Date.now() + 1000;
@@ -422,7 +418,7 @@ describe('ignoreCase / toLowerCase', function () {
     });
 
     describe('until with results', function() {
-      var response, aboutNow;
+      let response, aboutNow;
 
       beforeEach(function(done) {
         aboutNow = Date.now() + 1000;
@@ -445,7 +441,7 @@ describe('ignoreCase / toLowerCase', function () {
     });
 
     describe('until without results', function() {
-      var response, aboutNow;
+      let response, aboutNow;
 
       beforeEach(function(done) {
         aboutNow = Date.now() - 10000;
@@ -469,23 +465,22 @@ describe('ignoreCase / toLowerCase', function () {
   });
 
   describe('_meta', function() {
-    var schema = {
+    const schema = {
       username:{type:String, sortable:true}
     };
-    var UserRestmon;
-    var findResponse;
+    let UserRestmon, findResponse;
 
     beforeEach(function(done) {
       UserRestmon = new Restmon('User', schema);
-      var transientUser0 = new UserRestmon.model({username:'c'});
-      var transientUser1 = new UserRestmon.model({username:'b'});
-      var transientUser2 = new UserRestmon.model({username:'e'});
-      var transientUser3 = new UserRestmon.model({username:'d'});
+      const transientUser0 = new UserRestmon.model({username:'c'});
+      const transientUser1 = new UserRestmon.model({username:'b'});
+      const transientUser2 = new UserRestmon.model({username:'e'});
+      const transientUser3 = new UserRestmon.model({username:'d'});
 
-      var u0 = new UserRestmon.model({username:'dd'});
-      var u1 = new UserRestmon.model({username:'f'});
-      var u2 = new UserRestmon.model({username:'a'});
-      var u3 = new UserRestmon.model({username:'bb'});
+      const u0 = new UserRestmon.model({username:'dd'});
+      const u1 = new UserRestmon.model({username:'f'});
+      const u2 = new UserRestmon.model({username:'a'});
+      const u3 = new UserRestmon.model({username:'bb'});
       UserRestmon.save(transientUser0, function(err, data) {
         UserRestmon.save(transientUser1, function(err, data) {
           UserRestmon.save(transientUser2, function(err, data) {
@@ -508,7 +503,6 @@ describe('ignoreCase / toLowerCase', function () {
 
     afterEach(function(done) {
       UserRestmon.model.remove({}, function() {
-        delete mongoose.modelSchemas['User'];
         delete mongoose.models['User'];
         done();
       });
@@ -534,7 +528,7 @@ describe('ignoreCase / toLowerCase', function () {
     });
 
     it('provides the currect first cursor', function() {
-      var cursor = new Restmon.Cursor(findResponse._meta.first);
+      const cursor = new Restmon.Cursor(findResponse._meta.first);
       expect(cursor.get('username')).toBe('b');
     });
 
@@ -544,15 +538,15 @@ describe('ignoreCase / toLowerCase', function () {
     });
 
     it('provides the currect last cursor', function() {
-      var cursor = new Restmon.Cursor(findResponse._meta.last);
+      const cursor = new Restmon.Cursor(findResponse._meta.last);
       expect(cursor.get('username')).toBe('e');
     });
 
     describe('after sorted asc', function() {
-      var afterRes;
+      let afterRes;
 
       beforeEach(function(done) {
-        var cursor = new Restmon.Cursor(findResponse._meta.last);
+        const cursor = new Restmon.Cursor(findResponse._meta.last);
         UserRestmon.find({})
         .sort({username:1})
         .after(cursor)
@@ -569,10 +563,10 @@ describe('ignoreCase / toLowerCase', function () {
     });
 
     describe('before sorted asc', function() {
-      var afterRes;
+      let afterRes;
 
       beforeEach(function(done) {
-        var cursor = new Restmon.Cursor(findResponse._meta.first);
+        const cursor = new Restmon.Cursor(findResponse._meta.first);
         UserRestmon.find({})
         .sort({username:1})
         .before(cursor)
@@ -589,10 +583,10 @@ describe('ignoreCase / toLowerCase', function () {
     });
 
     describe('after sorted desc', function() {
-      var afterRes;
+      let afterRes;
 
       beforeEach(function(done) {
-        var cursor = new Restmon.Cursor(findResponse._meta.last);
+        const cursor = new Restmon.Cursor(findResponse._meta.last);
         UserRestmon.find({})
         .sort({username:-1})
         .after(cursor)
@@ -608,10 +602,10 @@ describe('ignoreCase / toLowerCase', function () {
     });
 
     describe('before sorted desc', function() {
-      var afterRes;
+      let afterRes;
 
       beforeEach(function(done) {
-        var cursor = new Restmon.Cursor(findResponse._meta.first);
+        const cursor = new Restmon.Cursor(findResponse._meta.first);
         UserRestmon.find({})
         .sort({username:-1})
         .before(cursor)
@@ -628,17 +622,17 @@ describe('ignoreCase / toLowerCase', function () {
   });
 
   describe('multi field sorting', function() {
-    var schema = {
+    const schema = {
       fn:{type:String, sortable:true},
       ln:{type:String, sortable:true},
       ph:{type:String, sortable:true},
       em:{type:String, sortable:true}
     };
-    var UserRestmon, findRes, sortByStringRes;
+    let UserRestmon, findRes, sortByStringRes;
 
     beforeEach(function(done) {
       UserRestmon = new Restmon('User', schema);
-      var userArr = [];
+      let userArr = [];
       userArr.push(new UserRestmon.model({fn:'John', ln:'Doe', ph:'555-555-5556'}));  // 4
       userArr.push(new UserRestmon.model({fn:'Bob', ln:'Doe', ph:'555-555-5555'}));   // 0
       userArr.push(new UserRestmon.model({fn:'John', ln:'Foe', ph:'555-555-5555'}));  // 1
@@ -671,7 +665,6 @@ describe('ignoreCase / toLowerCase', function () {
 
     afterEach(function(done) {
       UserRestmon.model.remove({}, function() {
-        delete mongoose.modelSchemas['User'];
         delete mongoose.models['User'];
         done();
       });
@@ -708,10 +701,10 @@ describe('ignoreCase / toLowerCase', function () {
     });
 
     describe('select', function() {
-      var selectRes;
+      let afterRes;
 
       beforeEach(function(done) {
-        var cursor = new Restmon.Cursor(findRes._meta.last);
+        const cursor = new Restmon.Cursor(findRes._meta.last);
         UserRestmon.find({})
         .select('fn ln')
         .sort({fn:1, ln:-1, ph:1})
@@ -730,10 +723,10 @@ describe('ignoreCase / toLowerCase', function () {
     });
 
     describe('after', function() {
-      var afterRes;
+      let afterRes;
 
       beforeEach(function(done) {
-        var cursor = new Restmon.Cursor(findRes._meta.last);
+        const cursor = new Restmon.Cursor(findRes._meta.last);
         UserRestmon.find({})
         .sort({fn:1, ln:-1, ph:1})
         .after(cursor)
@@ -755,10 +748,10 @@ describe('ignoreCase / toLowerCase', function () {
     });
 
     describe('before', function() {
-      var beforeRes;
+      let beforeRes;
 
       beforeEach(function(done) {
-        var cursor = new Restmon.Cursor(findRes._meta.first);
+        const cursor = new Restmon.Cursor(findRes._meta.first);
         UserRestmon.find({})
         .sort({fn:1, ln:-1, ph:1})
         .before(cursor)
@@ -781,16 +774,16 @@ describe('ignoreCase / toLowerCase', function () {
   });
 
   describe('update', function() {
-    var schema = {
+    const schema = {
       fn:{type:String, sortable:true},
       ln:{type:String, sortable:true},
       company:{type:String, sortable:true}
     };
-    var UserRestmon, findRes, sortByStringRes;
+    let UserRestmon, findRes, sortByStringRes;
 
     beforeEach(function(done) {
       UserRestmon = new Restmon('User', schema);
-      var userArr = [];
+      const userArr = [];
       userArr.push(new UserRestmon.model({fn:'John', ln:'Doe', company:'Google'}));  // 4
       userArr.push(new UserRestmon.model({fn:'Bob', ln:'Doe', company:'Facebook'}));   // 0
       userArr.push(new UserRestmon.model({fn:'John', ln:'Foe', company:'Google'}));  // 1
@@ -805,7 +798,6 @@ describe('ignoreCase / toLowerCase', function () {
 
     afterEach(function(done) {
       UserRestmon.model.remove({}, function() {
-        delete mongoose.modelSchemas['User'];
         delete mongoose.models['User'];
         done();
       });
@@ -813,7 +805,7 @@ describe('ignoreCase / toLowerCase', function () {
 
     describe('before the update', function() {
 
-      var beforeRes, afterRes;
+      let beforeRes, afterRes;
 
       beforeEach(function(done) {
         UserRestmon.find({})
@@ -836,7 +828,7 @@ describe('ignoreCase / toLowerCase', function () {
         expect(beforeRes.data[0]._company).toBe('facebook');
         expect(beforeRes.data[4].company).toBe('SAP');
         expect(beforeRes.data[4]._company).toBe('sap');
-        for (var i = 0; i < 5; i++) {
+        for (let i = 0; i < 5; i++) {
           expect(afterRes.data[i].company).toBe('Hatchpad.io');
           expect(afterRes.data[i]._company).toBe('hatchpad.io');
         }
@@ -845,15 +837,15 @@ describe('ignoreCase / toLowerCase', function () {
   });
 
   describe('sorting with null and undefined fields', function() {
-    var schema = {
+    const schema = {
       un:{type:String, sortable:true},
       other:{type:String, sortable:true}
     };
-    var UserRestmon, result1, result2, result3, sortByStringRes;
+    let UserRestmon, result1, result2, result3;
 
     beforeEach(function(done) {
       UserRestmon = new Restmon('User', schema);
-      var userArr = [];
+      const userArr = [];
       userArr.push(new UserRestmon.model({un:'un4', other:'other1'}));
       userArr.push(new UserRestmon.model({un:null, other:'other2'}));
       userArr.push(new UserRestmon.model({other:'other3'}));
@@ -865,14 +857,14 @@ describe('ignoreCase / toLowerCase', function () {
         .limit(2)
         .exec(function(err, res) {
           result1 = res;
-          var cursor = new Restmon.Cursor(result1._meta.last);
+          const cursor = new Restmon.Cursor(result1._meta.last);
           UserRestmon.find({})
           .sort('un,other')
           .after(cursor)
           .limit(2)
           .exec(function(err, res) {
             result2 = res;
-            var cursor2 = new Restmon.Cursor(result2._meta.last);
+            const cursor2 = new Restmon.Cursor(result2._meta.last);
             UserRestmon.find({})
             .sort('un,other')
             .after(cursor2)
@@ -888,7 +880,6 @@ describe('ignoreCase / toLowerCase', function () {
 
     afterEach(function(done) {
       UserRestmon.model.remove({}, function() {
-        delete mongoose.modelSchemas['User'];
         delete mongoose.models['User'];
         done();
       });
@@ -907,15 +898,15 @@ describe('ignoreCase / toLowerCase', function () {
   });
 
   describe('sorting with null and undefined fields descending', function() {
-    var schema = {
+    const schema = {
       un:{type:String, sortable:true},
       other:{type:String, sortable:true}
     };
-    var UserRestmon, result1, result2, result3, sortByStringRes;
+    let UserRestmon, result1, result2, result3;
 
     beforeEach(function(done) {
       UserRestmon = new Restmon('User', schema);
-      var userArr = [];
+      const userArr = [];
       userArr.push(new UserRestmon.model({un:'un4', other:'other1'}));
       userArr.push(new UserRestmon.model({un:null, other:'other2'}));
       userArr.push(new UserRestmon.model({other:'other3'}));
@@ -927,14 +918,14 @@ describe('ignoreCase / toLowerCase', function () {
         .limit(2)
         .exec(function(err, res) {
           result1 = res;
-          var cursor = new Restmon.Cursor(result1._meta.last);
+          const cursor = new Restmon.Cursor(result1._meta.last);
           UserRestmon.find({})
           .sort('-un,other')
           .after(cursor)
           .limit(2)
           .exec(function(err, res) {
             result2 = res;
-            var cursor2 = new Restmon.Cursor(result2._meta.last);
+            const cursor2 = new Restmon.Cursor(result2._meta.last);
             UserRestmon.find({})
             .sort('-un,other')
             .after(cursor2)
@@ -950,7 +941,6 @@ describe('ignoreCase / toLowerCase', function () {
 
     afterEach(function(done) {
       UserRestmon.model.remove({}, function() {
-        delete mongoose.modelSchemas['User'];
         delete mongoose.models['User'];
         done();
       });

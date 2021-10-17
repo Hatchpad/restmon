@@ -1,26 +1,24 @@
-var mongoose = require('mongoose');
-var mongoUri = 'mongodb://@localhost/restmon';
-mongoose.connect(mongoUri);
-var Restmon = require('../')(mongoose);
+const mongoose = require('mongoose');
+const Restmon = require('../')(mongoose);
+const db = require('./db')
 
 describe('config and default params', function() {
-  var schema = {
+  const schema = {
     username:{type:String, sortable:true}
   };
 
-  afterEach(function() {
-    mongoose.disconnect();
-  });
+  beforeAll(async () => await db.connect());
+  afterEach(async () => await db.clearDatabase());
+  afterAll(async () => await db.closeDatabase());
 
   describe('when ignoreCase is true by default', function() {
-    var UserRestmon;
+    let UserRestmon;
 
     beforeEach(function() {
       UserRestmon = new Restmon('User', schema);
     });
 
     afterEach(function() {
-      delete mongoose.modelSchemas['User'];
       delete mongoose.models['User'];
     });
 
@@ -41,7 +39,6 @@ describe('config and default params', function() {
     });
 
     afterEach(function() {
-      delete mongoose.modelSchemas['User'];
       delete mongoose.models['User'];
     });
 
@@ -62,7 +59,6 @@ describe('config and default params', function() {
     });
 
     afterEach(function() {
-      delete mongoose.modelSchemas['User'];
       delete mongoose.models['User'];
     });
 
@@ -84,7 +80,6 @@ describe('config and default params', function() {
     });
 
     afterEach(function() {
-      delete mongoose.modelSchemas['User'];
       delete mongoose.models['User'];
     });
 
@@ -106,7 +101,6 @@ describe('config and default params', function() {
     });
 
     afterEach(function() {
-      delete mongoose.modelSchemas['User'];
       delete mongoose.models['User'];
     });
 
