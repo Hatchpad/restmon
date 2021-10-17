@@ -1,10 +1,10 @@
 {
-  "name": "@hatchpad/restmon",
-  "version": "1.1.4",
+  "name": "restmon",
+  "version": "1.1.5",
   "description": "NodeJS package that allows mongoose models to handle rest-like parameters and cursors.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jasmine"
   },
   "keywords": [
     "Mongoose",
