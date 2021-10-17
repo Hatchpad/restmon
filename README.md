@@ -10,7 +10,7 @@ For use with Mongoose and MongoDB.
 
 ## Installation
 
-`npm install @hatchpad/restmon --save`
+`npm install restmon --save`
 
 ## Usage
 
@@ -18,16 +18,16 @@ For use with Mongoose and MongoDB.
 
 ```
 // Person.js
-var mongoose = require('mongoose');
-var Restmon = require('@hatchpad/restmon')(mongoose, 'a_secret_key');
+const mongoose = require('mongoose');
+const Restmon = require('@hatchpad/restmon')(mongoose, 'a_secret_key');
 
-var schema = {
+const schema = {
   firstName:{type:String, sortable:true},   // notice sortable property
   lastName:{type:String, sortable:true},
   dob:{type:Date, sortable: true}
 };
 
-var Person = new Restmon('Person', schema);
+const Person = new Restmon('Person', schema);
 module.exports = Person;
 ```
 
@@ -53,15 +53,15 @@ Cursors are a String token representing all the sortable fields of an object. Us
 ##### *First Page*
 ```
 // include the model object
-var Person = require('./person.js');
+const Person = require('./person.js');
 
-var query = {};
+const query = {};
 Person.find(query)
 .sort({lastName:1, firstName:-1})  // sort by lastName asc then firstName desc
 .limit(2)
 .exec(function(err, response) {
-  var personArr = response.data;   // ['John Doe', 'Bill Doe']
-  var lastPersonCursor = response._meta.last; // see Find Response for details about the response
+  const personArr = response.data;   // ['John Doe', 'Bill Doe']
+  const lastPersonCursor = response._meta.last; // see Find Response for details about the response
 });
 ```
 
@@ -69,13 +69,13 @@ Person.find(query)
 
 Assume we have retained *lastPersonCursor* from the previous code block
 ```
-var query = {};
+const query = {};
 Person.find(query)
 .sort({'lastName,-firstName'})    // String representation of sort
 .limit(2)
 .after(lastPersonCursor)          // use of "after"
 .exec(function(err, response) {
-  var personArr = response.data;  // ['Doug Dooley', 'John Smith']
+  const personArr = response.data;  // ['Doug Dooley', 'John Smith']
 });
 ```
 
@@ -84,17 +84,17 @@ Person.find(query)
 ##### *First Query*
 ```
 // include the model object
-var Person = require('./person.js');
+const Person = require('./person.js');
 
-var asOf = new Date();             // keep track of the asOf date
+const asOf = new Date();             // keep track of the asOf date
 
-var query = {};
+const query = {};
 Person.find(query)
 .sort({lastName:1, firstName:-1})  // sort by lastName asc then firstName desc
 .limit(2)
 .exec(function(err, response) {
-  var personArr = response.data;   // ['John Doe', 'Bill Doe']
-  var lastPersonCursor = response._meta.last;
+  const personArr = response.data;   // ['John Doe', 'Bill Doe']
+  const lastPersonCursor = response._meta.last;
 });
 ```
 
@@ -102,7 +102,7 @@ Person.find(query)
 
 Assume we have retained *lastPersonCursor* and *asOf* from the previous code block
 ```
-var query = {};
+const query = {};
 Person.find(query)
 .sort({'lastName,-firstName'})    // String representation of sort
 .limit(2)
@@ -110,7 +110,7 @@ Person.find(query)
 .since(asOf)
 .exec(function(err, response) {
   // will only return objects that are new or have been updated
-  var personArr = response.data;
+  const personArr = response.data;
 });
 ```
 
@@ -118,7 +118,7 @@ Person.find(query)
 
 Example showing automatic update tracking date and sortable String duplication
 ```
-var person = new Person.model({
+const person = new Person.model({
   firstName: 'Rick',
   lastName: 'Peoples'
 });
@@ -141,8 +141,8 @@ In this example, savedPerson will be this
 
 #### Config Options Example
 ```
-var options = {ignoreCase: false};
-var Restmon = require('@hatchpad/restmon')(mongoose, 'a_secret_token', options);
+const options = {ignoreCase: false};
+const Restmon = require('@hatchpad/restmon')(mongoose, 'a_secret_token', options);
 ```
 
 * **ignoreCase**
@@ -161,8 +161,8 @@ var Restmon = require('@hatchpad/restmon')(mongoose, 'a_secret_token', options);
 A restmon schema is defined exactly the same way as a normal Mongoose schema. The only exceptions are that fields that are sortable (that need to be included in cursors) need to be marked with the sortable property and you can configure each sortable String field with *ignoreCase*.  If a field is marked as sortable, it will be indexed, so you can exclude the index property.
 
 ```
-var ObjectId = ...;
-var schema = {
+const ObjectId = ...;
+const schema = {
   firstName:{type:String, sortable:true},   // notice sortable property
   lastName:{type:String, sortable:true},    // sortable fields are also indexed
   nickname:{type:String, sortable:true, ignoreCase:false},    // will sort uppercase letters first
@@ -170,7 +170,7 @@ var schema = {
   companyId:{type:ObjectId, index: true}     // this field is indexed but not sortable
 };
 
-var Person = new Restmon('Person', schema);
+const Person = new Restmon('Person', schema);
 module.exports = Person;
 ```
 
